@@ -1,5 +1,5 @@
 ---
-status: ready
+status: blocked-by-manual-xcode-setup
 created: 2026-02-28
 ---
 
