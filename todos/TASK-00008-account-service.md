@@ -1,5 +1,6 @@
 ---
-status: ready
+status: complete
+completed: 2026-02-28
 created: 2026-02-28
 ---
 
