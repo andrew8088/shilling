@@ -1,5 +1,5 @@
 ---
-status: ready
+status: wip
 created: 2026-03-03
 tasks:
   - TASK-00047-fix-budget-net-spend-semantics.md

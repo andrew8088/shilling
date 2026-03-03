@@ -94,7 +94,7 @@ struct BudgetView: View {
                     }
                     Spacer()
                     VStack(alignment: .center, spacing: Spacing.xxs) {
-                        Text("Spent")
+                        Text("Net Spend")
                             .font(.shillingCaption)
                             .foregroundStyle(Color.shillingTextSecondary)
                         AmountText(-totalSpent, font: .shillingBodyMono)

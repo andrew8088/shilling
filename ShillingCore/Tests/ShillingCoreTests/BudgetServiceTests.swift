@@ -155,6 +155,42 @@ struct BudgetServiceTests {
     }
 
     @Test @MainActor
+    func comparisonSubtractsExpenseCreditsAsRefunds() throws {
+        let (context, txService, budgetService) = try makeServices()
+
+        let groceries = Account(name: "Groceries", type: .expense)
+        let checking = Account(name: "Checking", type: .asset)
+        context.insert(groceries)
+        context.insert(checking)
+
+        try budgetService.setBudget(account: groceries, year: 2025, month: 3, amount: 400.00)
+
+        // Purchase: debit expense.
+        try txService.createTransaction(
+            date: date(year: 2025, month: 3, day: 5),
+            payee: "Supermarket",
+            entries: [
+                EntryData(account: groceries, amount: 150.00, type: .debit),
+                EntryData(account: checking, amount: 150.00, type: .credit),
+            ]
+        )
+
+        // Refund: credit expense.
+        try txService.createTransaction(
+            date: date(year: 2025, month: 3, day: 7),
+            payee: "Supermarket Refund",
+            entries: [
+                EntryData(account: checking, amount: 25.00, type: .debit),
+                EntryData(account: groceries, amount: 25.00, type: .credit),
+            ]
+        )
+
+        let comparison = try budgetService.comparison(account: groceries, year: 2025, month: 3)
+        #expect(comparison?.actualAmount == 125.00)
+        #expect(comparison?.remaining == 275.00)
+    }
+
+    @Test @MainActor
     func comparisonReturnsNilWhenNoBudgetSet() throws {
         let (context, _, budgetService) = try makeServices()
 
@@ -284,5 +320,32 @@ struct BudgetServiceTests {
         let februarySummary = try budgetService.monthlySummary(year: 2025, month: 2)
         #expect(februarySummary.count == 1)
         #expect(februarySummary[0].account.name == "Rent")
+    }
+
+    @Test @MainActor
+    func monthlySummaryAllowsNegativeActualWhenRefundsExceedSpend() throws {
+        let (context, txService, budgetService) = try makeServices()
+
+        let dining = Account(name: "Dining", type: .expense)
+        let checking = Account(name: "Checking", type: .asset)
+        context.insert(dining)
+        context.insert(checking)
+
+        try budgetService.setBudget(account: dining, year: 2025, month: 6, amount: 200.00)
+
+        // Refund-only month: credit expense, debit asset.
+        try txService.createTransaction(
+            date: date(year: 2025, month: 6, day: 12),
+            payee: "Restaurant Refund",
+            entries: [
+                EntryData(account: checking, amount: 40.00, type: .debit),
+                EntryData(account: dining, amount: 40.00, type: .credit),
+            ]
+        )
+
+        let summary = try budgetService.monthlySummary(year: 2025, month: 6)
+        let comparison = try #require(summary.first)
+        #expect(comparison.actualAmount == -40.00)
+        #expect(comparison.remaining == 240.00)
     }
 }

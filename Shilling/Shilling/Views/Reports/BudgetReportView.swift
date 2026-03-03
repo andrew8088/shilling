@@ -93,12 +93,10 @@ struct BudgetReportView: View {
 
             CardView {
                 VStack(spacing: Spacing.xxs) {
-                    Text("Spent")
+                    Text("Net Spend")
                         .font(.shillingCaption)
                         .foregroundStyle(Color.shillingTextSecondary)
-                    Text(FormatHelpers.currency(totalSpent))
-                        .font(.shillingAmountMono)
-                        .foregroundStyle(Color.shillingNegative)
+                    AmountText(-totalSpent, font: .shillingAmountMono)
                 }
                 .frame(maxWidth: .infinity)
             }

@@ -81,7 +81,8 @@ public struct BudgetService {
     // MARK: - comparison(account:year:month:)
 
     /// Returns a BudgetComparison for the given account/year/month, or nil if no budget is set.
-    /// Actual spending is computed from debit entries on the account within the calendar month.
+    /// Actual spending is computed as net movement on the expense account:
+    /// debit entries increase spend and credit entries reduce spend (e.g. refunds).
     public func comparison(account: Account, year: Int, month: Int) throws -> BudgetComparison? {
         guard let budget = try getBudget(account: account, year: year, month: month) else {
             return nil
@@ -116,7 +117,8 @@ public struct BudgetService {
 
     // MARK: - Private helpers
 
-    /// Sums all debit entries on `account` whose transaction date falls within the given calendar month.
+    /// Computes net monthly spending on an expense account:
+    /// debit entries increase spend, credit entries reduce it.
     private func actualSpending(account: Account, year: Int, month: Int) -> Decimal {
         guard
             let startOfMonth = Calendar.current.date(from: DateComponents(year: year, month: month, day: 1)),
@@ -127,12 +129,16 @@ public struct BudgetService {
 
         return account.entries
             .filter { entry in
-                guard
-                    entry.type == .debit,
-                    let txDate = entry.transaction?.date
-                else { return false }
+                guard let txDate = entry.transaction?.date else { return false }
                 return txDate >= startOfMonth && txDate < startOfNextMonth
             }
-            .reduce(Decimal.zero) { $0 + $1.amount }
+            .reduce(Decimal.zero) { total, entry in
+                switch entry.type {
+                case .debit:
+                    return total + entry.amount
+                case .credit:
+                    return total - entry.amount
+                }
+            }
     }
 }
