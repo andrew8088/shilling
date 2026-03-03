@@ -1,6 +1,7 @@
 ---
-status: ready
+status: complete
 created: 2026-03-03
+completed: 2026-03-03
 ---
 
 # Dashboard: Budget Summary Card

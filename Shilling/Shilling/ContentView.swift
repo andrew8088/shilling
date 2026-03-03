@@ -3,6 +3,7 @@ import SwiftData
 import ShillingCore
 
 enum NavigationItem: Hashable {
+    case dashboard
     case account(Account)
     case transactions
     case budget
@@ -10,7 +11,7 @@ enum NavigationItem: Hashable {
 
 struct ContentView: View {
     @Environment(\.modelContext) private var context
-    @State private var selection: NavigationItem? = nil
+    @State private var selection: NavigationItem? = .dashboard
     @State private var seeded = false
 
     var body: some View {
@@ -37,6 +38,8 @@ struct ContentView: View {
     @ViewBuilder
     private var detailView: some View {
         switch selection {
+        case .dashboard:
+            DashboardView(selection: $selection)
         case .account(let account):
             AccountDetailView(account: account)
         case .transactions:
@@ -44,11 +47,7 @@ struct ContentView: View {
         case .budget:
             BudgetView()
         case nil:
-            EmptyStateView(
-                icon: "banknote",
-                title: "Welcome to Shilling",
-                message: "Select an account, transactions, or budget from the sidebar."
-            )
+            DashboardView(selection: $selection)
         }
     }
 }

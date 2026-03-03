@@ -21,6 +21,10 @@ struct SidebarView: View {
 
     var body: some View {
         List(selection: $selection) {
+            NavigationLink(value: NavigationItem.dashboard) {
+                Label("Dashboard", systemImage: "house")
+            }
+
             Section("Accounts") {
                 ForEach(AccountType.allCases, id: \.self) { type in
                     let roots = rootAccounts(for: type)

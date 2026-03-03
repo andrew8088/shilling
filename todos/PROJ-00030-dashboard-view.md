@@ -1,6 +1,7 @@
 ---
-status: ready
+status: complete
 created: 2026-03-03
+completed: 2026-03-03
 tasks:
   - TASK-00031-dashboard-layout.md
   - TASK-00032-dashboard-net-worth-card.md
