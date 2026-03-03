@@ -40,7 +40,12 @@ struct BalanceSheetReportView: View {
                 EmptyStateView(
                     icon: "doc.text",
                     title: "No Balances",
-                    message: "No accounts have balances as of this date."
+                    message: "No accounts have balances as of this date.",
+                    actions: [
+                        .init("Jump to Today", systemImage: "calendar") {
+                            asOfDate = Date()
+                        }
+                    ]
                 )
             } else {
                 ScrollView {

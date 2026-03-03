@@ -10,26 +10,80 @@ struct DashboardView: View {
     @Query(sort: \Txn.date, order: .reverse) private var allTransactions: [Txn]
 
     @State private var budgetComparisons: [BudgetComparison] = []
+    @State private var showingNewAccountSheet = false
     @State private var showingNewTransactionSheet = false
     @State private var showingImportSheet = false
+    @State private var cardsVisible = false
 
     private var currentYear: Int { Calendar.current.component(.year, from: Date()) }
     private var currentMonth: Int { Calendar.current.component(.month, from: Date()) }
 
     var body: some View {
         ScrollView {
-            VStack(spacing: ShillingLayout.sectionSpacing) {
-                netWorthCard
-                accountSummarySection
-                budgetSummaryCard
-                recentTransactionsSection
-                quickActions
+            if activeAccounts.isEmpty {
+                EmptyStateView(
+                    icon: "building.columns",
+                    title: "No Accounts Yet",
+                    message: "Create your first account to start tracking balances, transactions, and budgets.",
+                    actions: [
+                        .init("Create Account", systemImage: "plus", isPrimary: true) {
+                            showingNewAccountSheet = true
+                        }
+                    ]
+                )
+                .padding(Spacing.xl)
+                .onAppear { cardsVisible = false }
+            } else if allTransactions.isEmpty && budgetComparisons.isEmpty {
+                EmptyStateView(
+                    icon: "sparkles",
+                    title: "Welcome to Your Dashboard",
+                    message: "Next step: add your first transaction or import a CSV statement to populate charts and summaries.",
+                    actions: [
+                        .init("Create Transaction", systemImage: "plus.circle", isPrimary: true) {
+                            showingNewTransactionSheet = true
+                        },
+                        .init("Import CSV", systemImage: "square.and.arrow.down") {
+                            showingImportSheet = true
+                        }
+                    ]
+                )
+                .padding(Spacing.xl)
+                .onAppear { cardsVisible = false }
+            } else {
+                VStack(spacing: ShillingLayout.sectionSpacing) {
+                    netWorthCard
+                        .opacity(cardsVisible ? 1 : 0)
+                        .offset(y: cardsVisible ? 0 : 8)
+                        .animation(.easeOut(duration: 0.22).delay(0.02), value: cardsVisible)
+                    accountSummarySection
+                        .opacity(cardsVisible ? 1 : 0)
+                        .offset(y: cardsVisible ? 0 : 8)
+                        .animation(.easeOut(duration: 0.24).delay(0.05), value: cardsVisible)
+                    budgetSummaryCard
+                        .opacity(cardsVisible ? 1 : 0)
+                        .offset(y: cardsVisible ? 0 : 8)
+                        .animation(.easeOut(duration: 0.26).delay(0.08), value: cardsVisible)
+                    recentTransactionsSection
+                        .opacity(cardsVisible ? 1 : 0)
+                        .offset(y: cardsVisible ? 0 : 8)
+                        .animation(.easeOut(duration: 0.28).delay(0.11), value: cardsVisible)
+                    quickActions
+                        .opacity(cardsVisible ? 1 : 0)
+                        .offset(y: cardsVisible ? 0 : 8)
+                        .animation(.easeOut(duration: 0.30).delay(0.14), value: cardsVisible)
+                }
+                .padding(Spacing.xl)
+                .onAppear {
+                    cardsVisible = true
+                }
             }
-            .padding(Spacing.xl)
         }
         .background(Color.shillingBackground)
         .navigationTitle("Dashboard")
         .task { loadBudget() }
+        .sheet(isPresented: $showingNewAccountSheet) {
+            AccountFormSheet(account: nil)
+        }
         .sheet(isPresented: $showingNewTransactionSheet) {
             TransactionFormSheet(transaction: nil)
         }
@@ -203,10 +257,24 @@ struct DashboardView: View {
 
             if recentTransactions.isEmpty {
                 CardView {
-                    Text("No transactions yet")
-                        .font(.shillingBody)
-                        .foregroundStyle(Color.shillingTextSecondary)
-                        .frame(maxWidth: .infinity)
+                    VStack(spacing: Spacing.sm) {
+                        Text("No transactions yet")
+                            .font(.shillingBody)
+                            .foregroundStyle(Color.shillingTextSecondary)
+                            .frame(maxWidth: .infinity)
+
+                        HStack(spacing: Spacing.sm) {
+                            Button("Create Transaction") {
+                                showingNewTransactionSheet = true
+                            }
+                            .buttonStyle(.borderedProminent)
+
+                            Button("Import CSV") {
+                                showingImportSheet = true
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                    }
                 }
             } else {
                 CardView {

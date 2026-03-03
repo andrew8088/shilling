@@ -12,6 +12,7 @@ struct ProgressBar: View {
     let value: Double
     let color: Color?
     let height: CGFloat
+    @State private var displayedValue: Double = 0
 
     init(value: Double, color: Color? = nil, height: CGFloat = 8) {
         self.value = value
@@ -42,11 +43,20 @@ struct ProgressBar: View {
                 // Fill
                 Capsule()
                     .fill(resolvedColor)
-                    .frame(width: geometry.size.width * clampedValue)
-                    .animation(.easeInOut(duration: 0.3), value: clampedValue)
+                    .frame(width: geometry.size.width * displayedValue)
             }
         }
         .frame(height: height)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.45)) {
+                displayedValue = clampedValue
+            }
+        }
+        .onChange(of: clampedValue) {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                displayedValue = clampedValue
+            }
+        }
     }
 }
 

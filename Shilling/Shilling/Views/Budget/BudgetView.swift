@@ -53,7 +53,12 @@ struct BudgetView: View {
             EmptyStateView(
                 icon: "chart.bar",
                 title: "No Budget Targets",
-                message: "Set budget targets for expense accounts to track spending."
+                message: "Set budget targets for expense accounts to track spending.",
+                actions: [
+                    .init("Set Budget Target", systemImage: "plus", isPrimary: true) {
+                        showingTargetSheet = true
+                    }
+                ]
             )
         } else {
             ScrollView {

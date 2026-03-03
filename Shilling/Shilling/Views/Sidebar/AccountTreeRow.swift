@@ -24,7 +24,13 @@ struct AccountTreeRow: View {
                     .clipShape(RoundedRectangle(cornerRadius: 3))
             }
             Spacer()
-            AmountText(balance, font: .shillingCaption)
+            if #available(macOS 14.0, *) {
+                AmountText(balance, font: .shillingCaption)
+                    .contentTransition(.numericText(value: NSDecimalNumber(decimal: balance).doubleValue))
+                    .animation(.easeInOut(duration: 0.2), value: balance)
+            } else {
+                AmountText(balance, font: .shillingCaption)
+            }
         }
     }
 }

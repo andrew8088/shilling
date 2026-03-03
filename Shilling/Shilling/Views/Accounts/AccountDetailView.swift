@@ -14,11 +14,15 @@ struct AccountDetailView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: Spacing.md) {
             header
-            Divider()
             registerTable
         }
+        .padding(.horizontal, Spacing.xl)
+        .padding(.top, Spacing.md)
+        .padding(.bottom, Spacing.xl)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.shillingBackground)
         .navigationTitle(account.name)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -51,31 +55,44 @@ struct AccountDetailView: View {
     }
 
     private var header: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(account.type.rawValue.capitalized)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                if account.isArchived {
-                    Text("Archived")
-                        .font(.caption)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(.yellow.opacity(0.2))
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
+        CardView {
+            HStack(alignment: .top, spacing: Spacing.md) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(account.name)
+                        .font(.shillingTitle)
+                        .foregroundStyle(Color.shillingTextPrimary)
+
+                    HStack(spacing: Spacing.xs) {
+                        Text(account.type.rawValue.capitalized)
+                            .font(.shillingLabel)
+                            .foregroundStyle(Color.shillingTextSecondary)
+                            .padding(.horizontal, Spacing.xs)
+                            .padding(.vertical, Spacing.xxs)
+                            .background(Color.shillingSurfaceSecondary)
+                            .clipShape(Capsule())
+
+                        if account.isArchived {
+                            Text("Archived")
+                                .font(.shillingLabel)
+                                .foregroundStyle(Color.shillingWarning)
+                                .padding(.horizontal, Spacing.xs)
+                                .padding(.vertical, Spacing.xxs)
+                                .background(Color.shillingWarning.opacity(0.16))
+                                .clipShape(Capsule())
+                        }
+                    }
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: Spacing.xxs) {
+                    Text("Current Balance")
+                        .font(.shillingCaption)
+                        .foregroundStyle(Color.shillingTextSecondary)
+                    AmountText(balance, font: .shillingLargeTitleMono)
                 }
             }
-            Spacer()
-            VStack(alignment: .trailing) {
-                Text("Balance")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Text(FormatHelpers.currency(balance))
-                    .font(.title2.monospacedDigit())
-                    .foregroundStyle(balance < 0 ? .red : .primary)
-            }
         }
-        .padding()
     }
 
     @ViewBuilder
@@ -84,40 +101,74 @@ struct AccountDetailView: View {
             EmptyStateView(
                 icon: "doc.text",
                 title: "No Transactions",
-                message: "Transactions involving this account will appear here."
+                message: "Transactions involving this account will appear here.",
+                actions: [
+                    .init(
+                        "Set Opening Balance",
+                        systemImage: "plus.circle",
+                        isPrimary: true
+                    ) {
+                        showingOpeningBalanceSheet = true
+                    }
+                ]
             )
         } else {
-            List(runningBalances, id: \.transaction.id) { row in
-                HStack {
-                    Text(FormatHelpers.date(row.transaction.date))
-                        .frame(width: 90, alignment: .leading)
-                    Text(row.transaction.payee)
-                        .frame(minWidth: 100, alignment: .leading)
-                    Spacer()
-                    Text(entryAmount(for: row.transaction))
-                        .monospacedDigit()
-                        .frame(width: 100, alignment: .trailing)
-                    Text(FormatHelpers.currency(row.balance))
-                        .monospacedDigit()
-                        .foregroundStyle(row.balance < 0 ? .red : .primary)
-                        .frame(width: 100, alignment: .trailing)
+            ScrollView {
+                CardView {
+                    VStack(spacing: 0) {
+                        HStack(spacing: Spacing.sm) {
+                            Text("Date")
+                                .frame(width: 92, alignment: .leading)
+                            Text("Payee")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Text("Change")
+                                .frame(width: 110, alignment: .trailing)
+                            Text("Balance")
+                                .frame(width: 110, alignment: .trailing)
+                        }
+                        .font(.shillingCaption)
+                        .foregroundStyle(Color.shillingTextSecondary)
+                        .padding(.bottom, Spacing.xs)
+
+                        Divider()
+
+                        ForEach(Array(runningBalances.enumerated()), id: \.element.transaction.id) { index, row in
+                            if index > 0 {
+                                Divider()
+                            }
+                            HStack(spacing: Spacing.sm) {
+                                Text(FormatHelpers.date(row.transaction.date))
+                                    .font(.shillingCaption)
+                                    .foregroundStyle(Color.shillingTextSecondary)
+                                    .frame(width: 92, alignment: .leading)
+
+                                Text(row.transaction.payee)
+                                    .font(.shillingBody)
+                                    .foregroundStyle(Color.shillingTextPrimary)
+                                    .lineLimit(1)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                AmountText(entryNetAmount(for: row.transaction), font: .shillingBodyMono)
+                                    .frame(width: 110, alignment: .trailing)
+
+                                AmountText(row.balance, font: .shillingBodyMono)
+                                    .frame(width: 110, alignment: .trailing)
+                            }
+                            .padding(.vertical, Spacing.xs)
+                        }
+                    }
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
     }
 
-    private func entryAmount(for transaction: Txn) -> String {
-        let entries = transaction.entries.filter { $0.account?.id == account.id }
-        let debits = entries.filter { $0.type == .debit }.reduce(Decimal.zero) { $0 + $1.amount }
-        let credits = entries.filter { $0.type == .credit }.reduce(Decimal.zero) { $0 + $1.amount }
-
-        if debits > 0 && credits > 0 {
-            return "D: \(FormatHelpers.currency(debits)) / C: \(FormatHelpers.currency(credits))"
-        } else if debits > 0 {
-            return FormatHelpers.currency(debits)
-        } else {
-            return "(\(FormatHelpers.currency(credits)))"
-        }
+    private func entryNetAmount(for transaction: Txn) -> Decimal {
+        transaction.entries
+            .filter { $0.account?.id == account.id }
+            .reduce(Decimal.zero) { total, entry in
+                total + (entry.type == .debit ? entry.amount : -entry.amount)
+            }
     }
 
     private func loadRegister() {

@@ -57,7 +57,13 @@ struct BudgetReportView: View {
             EmptyStateView(
                 icon: "chart.bar",
                 title: "No Budget Targets",
-                message: "Set budget targets in the Budget view to see comparisons here."
+                message: "Set budget targets in the Budget view to see comparisons here.",
+                actions: [
+                    .init("Go to Current Month", systemImage: "calendar") {
+                        year = Calendar.current.component(.year, from: Date())
+                        month = Calendar.current.component(.month, from: Date())
+                    }
+                ]
             )
         } else {
             ScrollView {

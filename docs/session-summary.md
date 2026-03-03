@@ -1,33 +1,30 @@
 # Session Summary — 2026-03-03
 
 ## Completed
-
-### PROJ-00021–00024: All Four Report Views
-- **ReportService** in ShillingCore with 3 methods: `netWorthHistory(months:)`, `cashFlow(months:)`, `balanceSheet(asOf:)` plus data types (MonthSnapshot, CashFlowMonth, BalanceSheetData)
-- **9 new tests** for ReportService (all passing, 183 total)
-- **Navigation wiring**: `.reports` case in NavigationItem, sidebar link with `chart.xyaxis.line` icon, ContentView routing
-- **ReportsView**: container with segmented picker (Net Worth / Cash Flow / Budget vs Actual / Balance Sheet)
-- **NetWorthReportView**: line chart (assets, liabilities, net worth) + period picker (6M/1Y/2Y/All) + summary cards
-- **CashFlowReportView**: grouped bar chart (income vs expenses) + net cash flow line + period picker + summary
-- **BudgetReportView**: horizontal bar chart per category with budget target rule marks + month nav + summary
-- **BalanceSheetReportView**: grouped table (assets/liabilities/equity sections) with subtotals + net worth hero card + date picker
-- All views use design system tokens (ChartCard, CardView, AmountText, SectionHeader, ChartColorScheme)
-
-### Previously completed
-- Design system (PROJ-00025), Dashboard (PROJ-00030), Swift Charts integration (TASK-00040)
-
-### TASK-00037: Transaction List Filters
-- Added advanced filters to Transactions view: optional **From/To** date filters (compact date pickers) and **Min/Max** amount filters
-- Implemented inclusive date range filtering (end date includes the full day)
-- Added amount range filtering against absolute entry-derived transaction amounts
-- Added full filter reset behavior (`Clear`) across search/account/date/amount filters
-- Updated filter bar layout to use a second-row advanced section to avoid horizontal crowding
+- Created and completed `PROJ-00045-final-ui-polish`.
+- Completed `TASK-00038`: Account detail redesign.
+  - Header now uses `CardView` with account title, type chip, archived warning badge, and large `AmountText` balance.
+  - Register view moved to tokenized table styling with `AmountText` for change + running balance.
+- Completed `TASK-00039`: Import flow redesign.
+  - Added 4-step progress header/breadcrumbs.
+  - Applied design tokens across pick/map/review/result states.
+  - Wrapped preview table in `CardView` and restyled result metrics with semantic colors.
+  - Standardized bottom action bar and button treatments.
+- Completed `TASK-00041`: Empty state polish.
+  - Upgraded `EmptyStateView` to token-based styling with CTA actions.
+  - Added contextual CTAs for no accounts, no transactions, no budget targets, and report/account empty states.
+  - Added guided dashboard first-run message when data is empty.
+- Completed `TASK-00042`: Animations pass.
+  - Progress bars animate on first appearance and value updates.
+  - Dashboard cards now fade/slide in with subtle stagger.
+  - Sidebar account balances use numeric text transition.
+  - Transaction list updates animate when filters change.
+- Verification:
+  - `xcodebuild ... build` succeeded.
+  - `swift test` in `ShillingCore` passed (183 tests).
 
 ## In flight
-Nothing.
+- Nothing.
 
-## Next steps
-- TASK-00041: Empty states polish (actionable CTAs + design token styling)
-- TASK-00038: Account detail redesign (header hierarchy + register polish)
-- TASK-00039: Import flow redesign (4-step visual indicator + token styling)
-- TASK-00042: Animations (final pass after remaining view work)
+## Next logical step
+- Run a manual UI QA pass in the macOS app for interaction polish (layout, CTA behavior, animation feel), then commit `PROJ-00045` as one cohesive change.

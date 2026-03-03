@@ -33,8 +33,35 @@ struct ImportCSVView: View {
     @State private var importResult: ImportResult? = nil
     @State private var importError: String? = nil
 
-    enum ImportStep {
+    enum ImportStep: Int, CaseIterable {
         case pickFile, mapColumns, review, result
+
+        var title: String {
+            switch self {
+            case .pickFile: return "Select CSV File"
+            case .mapColumns: return "Map Columns"
+            case .review: return "Review Import"
+            case .result: return "Import Complete"
+            }
+        }
+
+        var subtitle: String {
+            switch self {
+            case .pickFile: return "Choose the statement file you want to import."
+            case .mapColumns: return "Match CSV columns and select accounts."
+            case .review: return "Verify mappings before running import."
+            case .result: return "Summary of imported rows and issues."
+            }
+        }
+
+        var shortLabel: String {
+            switch self {
+            case .pickFile: return "File"
+            case .mapColumns: return "Map"
+            case .review: return "Review"
+            case .result: return "Result"
+            }
+        }
     }
 
     enum AmountMode: String, CaseIterable {
@@ -44,11 +71,70 @@ struct ImportCSVView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            stepHeader
+            Divider()
             stepContent
             Divider()
             bottomBar
         }
         .frame(minWidth: 650, minHeight: 500)
+        .background(Color.shillingBackground)
+    }
+
+    private var stepHeader: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text(step.title)
+                .font(.shillingTitle)
+                .foregroundStyle(Color.shillingTextPrimary)
+
+            Text(step.subtitle)
+                .font(.shillingBody)
+                .foregroundStyle(Color.shillingTextSecondary)
+
+            HStack(spacing: Spacing.xs) {
+                ForEach(ImportStep.allCases, id: \.self) { candidate in
+                    stepBadge(candidate)
+                }
+            }
+        }
+        .padding(Spacing.md)
+        .background(Color.shillingSurface)
+    }
+
+    private func stepBadge(_ candidate: ImportStep) -> some View {
+        let isCurrent = candidate == step
+        let isComplete = candidate.rawValue < step.rawValue
+        let badgeColor: Color = isCurrent || isComplete ? .shillingAccent : .shillingTextTertiary
+
+        return HStack(spacing: Spacing.xxs) {
+            ZStack {
+                Circle()
+                    .fill(isCurrent || isComplete ? Color.shillingAccent : Color.clear)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.shillingBorder, lineWidth: isCurrent || isComplete ? 0 : 1)
+                    )
+                    .frame(width: 16, height: 16)
+
+                if isComplete {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(Color.white)
+                } else {
+                    Text("\(candidate.rawValue + 1)")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(isCurrent ? Color.white : Color.shillingTextSecondary)
+                }
+            }
+
+            Text(candidate.shortLabel)
+                .font(.shillingCaption)
+                .foregroundStyle(badgeColor)
+        }
+        .padding(.horizontal, Spacing.xs)
+        .padding(.vertical, 6)
+        .background(isCurrent ? Color.shillingAccent.opacity(0.14) : Color.clear)
+        .clipShape(Capsule())
     }
 
     // MARK: - Step content
@@ -70,25 +156,42 @@ struct ImportCSVView: View {
     // MARK: - Pick File
 
     private var pickFileStep: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            Image(systemName: "doc.text")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
-            Text("Select a CSV File")
-                .font(.title2)
-            Text("Choose a bank or credit card statement exported as CSV.")
-                .foregroundStyle(.secondary)
-            Button("Choose File...") { openFile() }
-                .buttonStyle(.borderedProminent)
-            if let parseError {
-                Text(parseError)
-                    .foregroundStyle(.red)
-                    .padding(.top, 8)
+        ScrollView {
+            VStack(spacing: Spacing.xl) {
+                CardView {
+                    VStack(spacing: Spacing.md) {
+                        Image(systemName: "doc.text")
+                            .font(.system(size: 44, weight: .medium))
+                            .foregroundStyle(Color.shillingTextTertiary)
+
+                        Text("Select a CSV File")
+                            .font(.shillingTitle)
+                            .foregroundStyle(Color.shillingTextPrimary)
+
+                        Text("Choose a bank or credit card statement exported as CSV.")
+                            .font(.shillingBody)
+                            .foregroundStyle(Color.shillingTextSecondary)
+                            .multilineTextAlignment(.center)
+
+                        Button("Choose File...") { openFile() }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.large)
+
+                        if let parseError {
+                            Text(parseError)
+                                .font(.shillingCaption)
+                                .foregroundStyle(Color.shillingNegative)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .frame(maxWidth: 480)
             }
-            Spacer()
+            .frame(maxWidth: .infinity)
+            .padding(Spacing.xl)
         }
-        .frame(maxWidth: .infinity)
+        .background(Color.shillingBackground)
     }
 
     // MARK: - Map Columns
@@ -104,6 +207,7 @@ struct ImportCSVView: View {
                         Text(mode.rawValue).tag(mode)
                     }
                 }
+                .pickerStyle(.segmented)
 
                 if amountMode == .single {
                     columnPicker("Amount", selection: $amountColumn)
@@ -119,8 +223,8 @@ struct ImportCSVView: View {
                 AccountPicker(label: "Target Account", selection: $targetAccount)
                 AccountPicker(label: "Contra Account", selection: $contraAccount)
                 Text("Target = the account this statement is for. Contra = the default other side (e.g. an expense account).")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.shillingCaption)
+                    .foregroundStyle(Color.shillingTextSecondary)
             }
 
             Section("Preview (\(rows.count) rows)") {
@@ -128,6 +232,8 @@ struct ImportCSVView: View {
             }
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
+        .background(Color.shillingBackground)
     }
 
     private func columnPicker(_ label: String, selection: Binding<String>, optional: Bool = false) -> some View {
@@ -142,40 +248,43 @@ struct ImportCSVView: View {
     }
 
     private var previewTable: some View {
-        ScrollView(.horizontal) {
-            VStack(alignment: .leading, spacing: 0) {
-                // Header row
-                HStack(spacing: 0) {
-                    ForEach(headers, id: \.self) { header in
-                        Text(header)
-                            .fontWeight(.semibold)
-                            .frame(width: 120, alignment: .leading)
-                            .padding(.vertical, 4)
-                            .padding(.horizontal, 6)
-                    }
-                }
-                .background(.quaternary)
-
-                Divider()
-
-                // Data rows (first 5)
-                ForEach(rows.prefix(5), id: \.lineNumber) { row in
+        CardView {
+            ScrollView(.horizontal) {
+                VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 0) {
                         ForEach(headers, id: \.self) { header in
-                            Text(row.values[header] ?? "")
-                                .lineLimit(1)
+                            Text(header)
+                                .font(.shillingCaption)
+                                .foregroundStyle(Color.shillingTextSecondary)
                                 .frame(width: 120, alignment: .leading)
-                                .padding(.vertical, 3)
-                                .padding(.horizontal, 6)
+                                .padding(.vertical, Spacing.xs)
+                                .padding(.horizontal, Spacing.xs)
                         }
                     }
-                }
+                    .background(Color.shillingSurfaceSecondary)
 
-                if rows.count > 5 {
-                    Text("... and \(rows.count - 5) more rows")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(6)
+                    Divider()
+
+                    ForEach(rows.prefix(5), id: \.lineNumber) { row in
+                        HStack(spacing: 0) {
+                            ForEach(headers, id: \.self) { header in
+                                Text(row.values[header] ?? "")
+                                    .font(.shillingBody)
+                                    .foregroundStyle(Color.shillingTextPrimary)
+                                    .lineLimit(1)
+                                    .frame(width: 120, alignment: .leading)
+                                    .padding(.vertical, Spacing.xxs)
+                                    .padding(.horizontal, Spacing.xs)
+                            }
+                        }
+                    }
+
+                    if rows.count > 5 {
+                        Text("... and \(rows.count - 5) more rows")
+                            .font(.shillingCaption)
+                            .foregroundStyle(Color.shillingTextSecondary)
+                            .padding(Spacing.xs)
+                    }
                 }
             }
         }
@@ -184,109 +293,145 @@ struct ImportCSVView: View {
     // MARK: - Review
 
     private var reviewStep: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            Image(systemName: "arrow.down.doc")
-                .font(.system(size: 48))
-                .foregroundStyle(.blue)
-            Text("Ready to Import")
-                .font(.title2)
+        ScrollView {
+            VStack(spacing: Spacing.lg) {
+                Image(systemName: "arrow.down.doc")
+                    .font(.system(size: 42, weight: .medium))
+                    .foregroundStyle(Color.shillingAccent)
 
-            VStack(alignment: .leading, spacing: 8) {
-                summaryRow("File", fileName)
-                summaryRow("Rows", "\(rows.count)")
-                summaryRow("Date column", dateColumn)
-                summaryRow("Payee column", payeeColumn)
-                if amountMode == .single {
-                    summaryRow("Amount column", amountColumn)
-                } else {
-                    summaryRow("Debit column", debitColumn)
-                    summaryRow("Credit column", creditColumn)
-                }
-                if !memoColumn.isEmpty {
-                    summaryRow("Memo column", memoColumn)
-                }
-                summaryRow("Target account", targetAccount?.name ?? "—")
-                summaryRow("Contra account", contraAccount?.name ?? "—")
-            }
-            .padding()
-            .background(.quaternary)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+                Text("Ready to Import")
+                    .font(.shillingTitle)
+                    .foregroundStyle(Color.shillingTextPrimary)
 
-            if let importError {
-                Text(importError)
-                    .foregroundStyle(.red)
+                CardView {
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        summaryRow("File", fileName)
+                        summaryRow("Rows", "\(rows.count)")
+                        summaryRow("Date column", dateColumn)
+                        summaryRow("Payee column", payeeColumn)
+                        if amountMode == .single {
+                            summaryRow("Amount column", amountColumn)
+                        } else {
+                            summaryRow("Debit column", debitColumn)
+                            summaryRow("Credit column", creditColumn)
+                        }
+                        if !memoColumn.isEmpty {
+                            summaryRow("Memo column", memoColumn)
+                        }
+                        summaryRow("Target account", targetAccount?.name ?? "—")
+                        summaryRow("Contra account", contraAccount?.name ?? "—")
+                    }
+                }
+                .frame(maxWidth: 520)
+
+                if let importError {
+                    Text(importError)
+                        .font(.shillingCaption)
+                        .foregroundStyle(Color.shillingNegative)
+                        .frame(maxWidth: 520, alignment: .leading)
+                }
             }
-            Spacer()
+            .frame(maxWidth: .infinity)
+            .padding(Spacing.xl)
         }
-        .frame(maxWidth: .infinity)
+        .background(Color.shillingBackground)
     }
 
     private func summaryRow(_ label: String, _ value: String) -> some View {
         HStack {
             Text(label)
-                .foregroundStyle(.secondary)
+                .font(.shillingCaption)
+                .foregroundStyle(Color.shillingTextSecondary)
                 .frame(width: 120, alignment: .trailing)
             Text(value)
-                .fontWeight(.medium)
+                .font(.shillingBody)
+                .foregroundStyle(Color.shillingTextPrimary)
+                .lineLimit(1)
         }
     }
 
     // MARK: - Result
 
     private var resultStep: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            if let result = importResult {
-                Image(systemName: result.errors.isEmpty ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                    .font(.system(size: 48))
-                    .foregroundStyle(result.errors.isEmpty ? .green : .yellow)
-                Text("Import Complete")
-                    .font(.title2)
+        ScrollView {
+            VStack(spacing: Spacing.lg) {
+                if let result = importResult {
+                    Image(systemName: result.errors.isEmpty ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                        .font(.system(size: 48))
+                        .foregroundStyle(result.errors.isEmpty ? Color.shillingPositive : Color.shillingWarning)
 
-                VStack(alignment: .leading, spacing: 6) {
-                    summaryRow("Imported", "\(result.importedCount)")
-                    summaryRow("Duplicates skipped", "\(result.skippedDuplicates)")
-                    if !result.errors.isEmpty {
-                        summaryRow("Errors", "\(result.errors.count)")
-                    }
-                }
-                .padding()
-                .background(.quaternary)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                    Text("Import Complete")
+                        .font(.shillingTitle)
+                        .foregroundStyle(Color.shillingTextPrimary)
 
-                if !result.errors.isEmpty {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 4) {
-                            ForEach(result.errors.prefix(20), id: \.lineNumber) { err in
-                                Text("Row \(err.lineNumber): \(err.message)")
-                                    .font(.caption)
-                                    .foregroundStyle(.red)
+                    CardView {
+                        VStack(alignment: .leading, spacing: Spacing.sm) {
+                            resultCountRow("Imported", value: result.importedCount, color: .shillingPositive)
+                            resultCountRow("Duplicates skipped", value: result.skippedDuplicates, color: .shillingTextSecondary)
+                            if !result.errors.isEmpty {
+                                resultCountRow("Errors", value: result.errors.count, color: .shillingNegative)
                             }
                         }
-                        .padding()
                     }
-                    .frame(maxHeight: 150)
+                    .frame(maxWidth: 520)
+
+                    if !result.errors.isEmpty {
+                        CardView {
+                            ScrollView {
+                                VStack(alignment: .leading, spacing: Spacing.xs) {
+                                    ForEach(result.errors.prefix(20), id: \.lineNumber) { err in
+                                        Text("Row \(err.lineNumber): \(err.message)")
+                                            .font(.shillingCaption)
+                                            .foregroundStyle(Color.shillingNegative)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .frame(maxHeight: 180)
+                        }
+                        .frame(maxWidth: 520)
+                    }
                 }
             }
-            Spacer()
+            .frame(maxWidth: .infinity)
+            .padding(Spacing.xl)
         }
-        .frame(maxWidth: .infinity)
+        .background(Color.shillingBackground)
+    }
+
+    private func resultCountRow(_ label: String, value: Int, color: Color) -> some View {
+        HStack {
+            Text(label)
+                .font(.shillingCaption)
+                .foregroundStyle(Color.shillingTextSecondary)
+            Spacer()
+            Text("\(value)")
+                .font(.shillingAmountMono)
+                .foregroundStyle(color)
+        }
     }
 
     // MARK: - Bottom Bar
 
     private var bottomBar: some View {
-        HStack {
+        HStack(spacing: Spacing.sm) {
             if step != .pickFile && step != .result {
                 Button("Back") { goBack() }
+                    .buttonStyle(.bordered)
             }
             Spacer()
-            Button(step == .result ? "Done" : "Cancel") { dismiss() }
-                .keyboardShortcut(.cancelAction)
+            if step == .result {
+                Button("Done") { dismiss() }
+                    .buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction)
+            } else {
+                Button("Cancel") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+            }
             if step == .mapColumns {
                 Button("Next") { step = .review }
                     .keyboardShortcut(.defaultAction)
+                    .buttonStyle(.borderedProminent)
                     .disabled(!mappingValid)
             }
             if step == .review {
@@ -295,7 +440,8 @@ struct ImportCSVView: View {
                     .buttonStyle(.borderedProminent)
             }
         }
-        .padding()
+        .padding(Spacing.md)
+        .background(Color.shillingSurface)
     }
 
     // MARK: - Validation

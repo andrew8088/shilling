@@ -13,6 +13,7 @@ struct TransactionListView: View {
     @State private var maxAmount: Decimal = .zero
     @State private var showAdvancedFilters = false
     @State private var showingNewTransactionSheet = false
+    @State private var showingImportSheet = false
     @State private var selectedTransaction: Txn? = nil
 
     private var activeAmountRange: (min: Decimal?, max: Decimal?) {
@@ -31,6 +32,10 @@ struct TransactionListView: View {
 
     private var hasActiveFilters: Bool {
         !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || filterAccount != nil || hasAdvancedFilters
+    }
+
+    private var filteredIDs: [AnyHashable] {
+        filtered.map { AnyHashable($0.id) }
     }
 
     private var filtered: [Txn] {
@@ -74,7 +79,21 @@ struct TransactionListView: View {
                     title: "No Transactions",
                     message: hasActiveFilters
                         ? "No transactions match the current filters."
-                        : "Create a transaction to get started."
+                        : "Create a transaction or import a CSV file to get started.",
+                    actions: hasActiveFilters
+                        ? [
+                            .init("Clear Filters", systemImage: "line.3.horizontal.decrease.circle") {
+                                clearFilters()
+                            }
+                        ]
+                        : [
+                            .init("Create Transaction", systemImage: "plus", isPrimary: true) {
+                                showingNewTransactionSheet = true
+                            },
+                            .init("Import CSV", systemImage: "square.and.arrow.down") {
+                                showingImportSheet = true
+                            }
+                        ]
                 )
             } else {
                 List(filtered, id: \.id, selection: $selectedTransaction) { transaction in
@@ -83,6 +102,7 @@ struct TransactionListView: View {
                 }
             }
         }
+        .animation(.default, value: filteredIDs)
         .navigationTitle("Transactions")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -95,6 +115,9 @@ struct TransactionListView: View {
         }
         .sheet(isPresented: $showingNewTransactionSheet) {
             TransactionFormSheet(transaction: nil)
+        }
+        .sheet(isPresented: $showingImportSheet) {
+            ImportCSVView()
         }
         .sheet(item: $selectedTransaction) { tx in
             TransactionFormSheet(transaction: tx)
