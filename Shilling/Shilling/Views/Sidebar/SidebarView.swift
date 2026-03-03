@@ -75,6 +75,9 @@ struct SidebarView: View {
                 NavigationLink(value: NavigationItem.budget) {
                     Label("Budget", systemImage: "chart.bar")
                 }
+                NavigationLink(value: NavigationItem.reports) {
+                    Label("Reports", systemImage: "chart.xyaxis.line")
+                }
             }
         }
         .listStyle(.sidebar)

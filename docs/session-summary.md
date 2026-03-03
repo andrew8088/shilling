@@ -2,22 +2,19 @@
 
 ## Completed
 
-### PROJ-00025 Design System
-- Color tokens: 12 semantic colors with light/dark mode (backgrounds, surfaces, text, semantic financial, accent, border)
-- Type scale: 7 standard + 3 monospaced digit font tokens
-- Spacing: 8pt grid system (Spacing enum) + ShillingLayout constants
-- Styled components: CardView, AmountText, SectionHeader, ProgressBar — all with previews
-- Note: renamed `Layout` enum to `ShillingLayout` to avoid conflict with SwiftUI's `Layout` protocol
+### PROJ-00021–00024: All Four Report Views
+- **ReportService** in ShillingCore with 3 methods: `netWorthHistory(months:)`, `cashFlow(months:)`, `balanceSheet(asOf:)` plus data types (MonthSnapshot, CashFlowMonth, BalanceSheetData)
+- **9 new tests** for ReportService (all passing, 183 total)
+- **Navigation wiring**: `.reports` case in NavigationItem, sidebar link with `chart.xyaxis.line` icon, ContentView routing
+- **ReportsView**: container with segmented picker (Net Worth / Cash Flow / Budget vs Actual / Balance Sheet)
+- **NetWorthReportView**: line chart (assets, liabilities, net worth) + period picker (6M/1Y/2Y/All) + summary cards
+- **CashFlowReportView**: grouped bar chart (income vs expenses) + net cash flow line + period picker + summary
+- **BudgetReportView**: horizontal bar chart per category with budget target rule marks + month nav + summary
+- **BalanceSheetReportView**: grouped table (assets/liabilities/equity sections) with subtotals + net worth hero card + date picker
+- All views use design system tokens (ChartCard, CardView, AmountText, SectionHeader, ChartColorScheme)
 
-### PROJ-00030 Dashboard View
-- Dashboard is now the default landing view (replaces empty welcome state)
-- Net worth hero card (assets − liabilities with breakdown)
-- Account summary cards grouped by type with totals
-- Budget summary with progress bar for current month
-- Recent transactions (last 10) with "View All" link
-- Quick actions: New Transaction, Import CSV
-- Wired into sidebar as first item with house icon
-- All sections use design system tokens
+### Previously completed
+- Design system (PROJ-00025), Dashboard (PROJ-00030), Swift Charts integration (TASK-00040)
 
 ## In flight
 Nothing.
@@ -25,4 +22,5 @@ Nothing.
 ## Next steps
 - TASK-00036: Budget view redesign (progress bars per row, summary totals)
 - TASK-00035: Sidebar polish (type totals, icons)
-- TASK-00040: Swift Charts integration (unlocks report views PROJ-00021–00024)
+- TASK-00041: Empty states polish
+- TASK-00042: Animations

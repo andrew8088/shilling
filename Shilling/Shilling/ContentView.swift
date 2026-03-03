@@ -7,6 +7,7 @@ enum NavigationItem: Hashable {
     case account(Account)
     case transactions
     case budget
+    case reports
 }
 
 struct ContentView: View {
@@ -46,6 +47,8 @@ struct ContentView: View {
             TransactionListView()
         case .budget:
             BudgetView()
+        case .reports:
+            ReportsView()
         case nil:
             DashboardView(selection: $selection)
         }
