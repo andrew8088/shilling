@@ -1,5 +1,5 @@
 ---
-status: ready
+status: wip
 created: 2026-02-28
 tasks:
   - TASK-00013-csv-parser.md
