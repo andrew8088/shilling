@@ -1,6 +1,7 @@
 ---
-status: wip
+status: complete
 created: 2026-02-28
+completed: 2026-03-02
 tasks:
   - TASK-00002-swift-package-setup.md
   - TASK-00003-swiftdata-models.md

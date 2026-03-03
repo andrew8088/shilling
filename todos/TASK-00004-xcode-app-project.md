@@ -1,6 +1,7 @@
 ---
-status: blocked-by-manual-xcode-setup
+status: complete
 created: 2026-02-28
+completed: 2026-03-02
 ---
 
 # Set Up macOS SwiftUI App Project

@@ -1,23 +1,17 @@
-import SwiftData
+//
+//  ShillingApp.swift
+//  Shilling
+//
+//  Created by Andrew Burgess on 2026-03-02.
+//
+
 import SwiftUI
-import ShillingCore
 
 @main
 struct ShillingApp: App {
-    let container: ModelContainer
-
-    init() {
-        do {
-            container = try ModelContainerSetup.makeDefault()
-        } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
-        }
-    }
-
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(container)
     }
 }

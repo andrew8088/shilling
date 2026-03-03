@@ -1,26 +1,24 @@
+//
+//  ContentView.swift
+//  Shilling
+//
+//  Created by Andrew Burgess on 2026-03-02.
+//
+
 import SwiftUI
-import SwiftData
-import ShillingCore
 
 struct ContentView: View {
     var body: some View {
-        NavigationSplitView {
-            SidebarView()
-        } detail: {
-            Text("Select an item")
-                .foregroundStyle(.secondary)
+        VStack {
+            Image(systemName: "globe")
+                .imageScale(.large)
+                .foregroundStyle(.tint)
+            Text("Hello, world!")
         }
-        .frame(minWidth: 600, minHeight: 400)
+        .padding()
     }
 }
 
-struct SidebarView: View {
-    var body: some View {
-        List {
-            NavigationLink("Accounts", value: "accounts")
-            NavigationLink("Transactions", value: "transactions")
-            NavigationLink("Budgets", value: "budgets")
-        }
-        .navigationTitle("Shilling")
-    }
+#Preview {
+    ContentView()
 }
