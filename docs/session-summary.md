@@ -20,7 +20,8 @@
 Nothing.
 
 ## Next steps
-- TASK-00036: Budget view redesign (progress bars per row, summary totals)
-- TASK-00035: Sidebar polish (type totals, icons)
-- TASK-00041: Empty states polish
-- TASK-00042: Animations
+- TASK-00037: Transaction list filters (date range + amount range)
+- TASK-00041: Empty states polish (actionable CTAs + design token styling)
+- TASK-00038: Account detail redesign (header hierarchy + register polish)
+- TASK-00039: Import flow redesign (4-step visual indicator + token styling)
+- TASK-00042: Animations (final pass after remaining view work)
