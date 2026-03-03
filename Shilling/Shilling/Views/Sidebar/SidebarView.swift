@@ -19,6 +19,21 @@ struct SidebarView: View {
         }
     }
 
+    private func icon(for type: AccountType) -> String {
+        switch type {
+        case .asset:     return "banknote"
+        case .liability: return "creditcard"
+        case .equity:    return "building.columns"
+        case .income:    return "arrow.down.circle"
+        case .expense:   return "cart"
+        }
+    }
+
+    private func typeTotal(for type: AccountType) -> Decimal {
+        let service = BalanceService(context: context)
+        return rootAccounts(for: type).reduce(Decimal.zero) { $0 + service.balance(for: $1) }
+    }
+
     var body: some View {
         List(selection: $selection) {
             NavigationLink(value: NavigationItem.dashboard) {
@@ -29,9 +44,24 @@ struct SidebarView: View {
                 ForEach(AccountType.allCases, id: \.self) { type in
                     let roots = rootAccounts(for: type)
                     if !roots.isEmpty {
-                        DisclosureGroup(type.rawValue.capitalized) {
+                        DisclosureGroup {
                             ForEach(roots, id: \.id) { account in
                                 accountTree(account)
+                            }
+                        } label: {
+                            HStack(spacing: Spacing.xs) {
+                                Image(systemName: icon(for: type))
+                                    .font(.shillingCaption)
+                                    .foregroundStyle(Color.shillingTextSecondary)
+                                    .frame(width: 16)
+                                Text(type.rawValue.capitalized)
+                                    .font(.shillingSubheading)
+                                    .foregroundStyle(Color.shillingTextPrimary)
+                                Spacer()
+                                Text(FormatHelpers.currency(typeTotal(for: type)))
+                                    .font(.shillingCaption)
+                                    .monospacedDigit()
+                                    .foregroundStyle(Color.shillingTextTertiary)
                             }
                         }
                     }

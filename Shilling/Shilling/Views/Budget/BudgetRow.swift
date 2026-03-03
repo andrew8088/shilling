@@ -4,29 +4,26 @@ import ShillingCore
 struct BudgetRow: View {
     let comparison: BudgetComparison
 
-    private var remainingColor: Color {
-        guard comparison.budgetAmount > 0 else { return .primary }
-        let ratio = comparison.remaining / comparison.budgetAmount
-        if ratio < 0 { return .red }
-        if ratio <= Decimal(string: "0.2")! { return .yellow }
-        return .green
+    private var progress: Double {
+        guard comparison.budgetAmount > 0 else { return 0 }
+        return NSDecimalNumber(decimal: comparison.actualAmount / comparison.budgetAmount).doubleValue
     }
 
     var body: some View {
-        HStack {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             Text(comparison.account.name)
-                .frame(minWidth: 120, alignment: .leading)
-            Spacer()
-            Text(FormatHelpers.currency(comparison.budgetAmount))
-                .monospacedDigit()
-                .frame(width: 90, alignment: .trailing)
-            Text(FormatHelpers.currency(comparison.actualAmount))
-                .monospacedDigit()
-                .frame(width: 90, alignment: .trailing)
-            Text(FormatHelpers.currency(comparison.remaining))
-                .monospacedDigit()
-                .foregroundStyle(remainingColor)
-                .frame(width: 90, alignment: .trailing)
+                .font(.shillingSubheading)
+                .foregroundStyle(Color.shillingTextPrimary)
+
+            ProgressBar(value: progress)
+
+            HStack {
+                Text("\(FormatHelpers.currency(comparison.actualAmount)) of \(FormatHelpers.currency(comparison.budgetAmount))")
+                    .font(.shillingCaption)
+                    .foregroundStyle(Color.shillingTextSecondary)
+                Spacer()
+                AmountText(comparison.remaining, font: .shillingBodyMono)
+            }
         }
     }
 }

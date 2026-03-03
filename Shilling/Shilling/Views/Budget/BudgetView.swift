@@ -11,6 +11,14 @@ struct BudgetView: View {
     @State private var showingTargetSheet = false
     @State private var errorMessage: String? = nil
 
+    private var totalBudgeted: Decimal { comparisons.reduce(0) { $0 + $1.budgetAmount } }
+    private var totalSpent: Decimal { comparisons.reduce(0) { $0 + $1.actualAmount } }
+    private var totalRemaining: Decimal { totalBudgeted - totalSpent }
+    private var overallProgress: Double {
+        guard totalBudgeted > 0 else { return 0 }
+        return NSDecimalNumber(decimal: totalSpent / totalBudgeted).doubleValue
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             monthPicker
@@ -48,8 +56,52 @@ struct BudgetView: View {
                 message: "Set budget targets for expense accounts to track spending."
             )
         } else {
-            List(comparisons, id: \.account.id) { row in
-                BudgetRow(comparison: row)
+            ScrollView {
+                VStack(alignment: .leading, spacing: ShillingLayout.sectionSpacing) {
+                    summaryCard
+
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        SectionHeader("By Category")
+                        ForEach(comparisons, id: \.account.id) { comparison in
+                            CardView {
+                                BudgetRow(comparison: comparison)
+                            }
+                        }
+                    }
+                }
+                .padding(ShillingLayout.cardPadding)
+            }
+            .background(Color.shillingBackground)
+        }
+    }
+
+    private var summaryCard: some View {
+        CardView {
+            VStack(alignment: .leading, spacing: Spacing.md) {
+                SectionHeader("Monthly Overview")
+                ProgressBar(value: overallProgress)
+                HStack {
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
+                        Text("Budgeted")
+                            .font(.shillingCaption)
+                            .foregroundStyle(Color.shillingTextSecondary)
+                        AmountText(totalBudgeted, font: .shillingBodyMono)
+                    }
+                    Spacer()
+                    VStack(alignment: .center, spacing: Spacing.xxs) {
+                        Text("Spent")
+                            .font(.shillingCaption)
+                            .foregroundStyle(Color.shillingTextSecondary)
+                        AmountText(-totalSpent, font: .shillingBodyMono)
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: Spacing.xxs) {
+                        Text("Remaining")
+                            .font(.shillingCaption)
+                            .foregroundStyle(Color.shillingTextSecondary)
+                        AmountText(totalRemaining, font: .shillingBodyMono)
+                    }
+                }
             }
         }
     }
@@ -64,8 +116,7 @@ struct BudgetView: View {
             .buttonStyle(.borderless)
 
             Text(FormatHelpers.monthYear(year: year, month: month))
-                .font(.title3)
-                .fontWeight(.medium)
+                .font(.shillingTitle)
                 .frame(minWidth: 150)
 
             Button {
@@ -117,13 +168,5 @@ struct BudgetView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
-    }
-
-    private func remainingColor(_ comparison: BudgetComparison) -> Color {
-        guard comparison.budgetAmount > 0 else { return .primary }
-        let ratio = comparison.remaining / comparison.budgetAmount
-        if ratio < 0 { return .red }
-        if ratio <= Decimal(string: "0.2")! { return .yellow }
-        return .green
     }
 }

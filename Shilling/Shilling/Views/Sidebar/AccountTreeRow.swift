@@ -13,6 +13,7 @@ struct AccountTreeRow: View {
     var body: some View {
         HStack {
             Text(account.name)
+                .font(.shillingBody)
                 .foregroundStyle(account.isArchived ? .secondary : .primary)
             if account.isArchived {
                 Text("archived")
@@ -23,9 +24,7 @@ struct AccountTreeRow: View {
                     .clipShape(RoundedRectangle(cornerRadius: 3))
             }
             Spacer()
-            Text(FormatHelpers.currency(balance))
-                .font(.body.monospacedDigit())
-                .foregroundStyle(balance < 0 ? .red : .secondary)
+            AmountText(balance, font: .shillingCaption)
         }
     }
 }
