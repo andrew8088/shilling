@@ -1,6 +1,7 @@
 ---
-status: ready
+status: complete
 created: 2026-03-02
+completed: 2026-03-03
 tasks:
   - TASK-00026-color-tokens.md
   - TASK-00027-type-scale.md

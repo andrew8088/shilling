@@ -1,6 +1,7 @@
 ---
-status: ready
+status: complete
 created: 2026-03-02
+completed: 2026-03-03
 ---
 
 # Color Tokens
