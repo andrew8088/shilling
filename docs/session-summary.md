@@ -1,12 +1,10 @@
 # Session Summary — 2026-03-03
 
 ## Completed
-- Committed audit follow-up planning tickets (`ce9c822`).
-- Started and completed `TASK-00047-fix-budget-net-spend-semantics`.
-  - `BudgetService` now computes monthly actuals as net expense movement (debits minus credits).
-  - Added regression tests for refund handling and negative net-spend months.
-  - Updated budget UI summary labels to "Net Spend" and adjusted report summary amount coloring semantics.
-  - Verification passed: `swift test` in `ShillingCore`; `xcodebuild ... build` succeeded.
+- Created and completed `PROJ-00052-dashboard-net-worth-trend-card` and `TASK-00053-add-dashboard-net-worth-area-background`.
+- Added a 12-month net worth area/line trend background behind the dashboard headline net worth amount.
+- Updated dashboard loading to fetch budget summary and net worth history together.
+- Verification passed: `xcodebuild -project /Users/andrew/code/shilling/Shilling/Shilling.xcodeproj -scheme Shilling -destination 'platform=macOS' -derivedDataPath /tmp/shilling-deriveddata build` (`BUILD SUCCEEDED`).
 
 ## In flight
 - `PROJ-00046-audit-hardening-followups` remains `wip`.

@@ -1,3 +1,4 @@
+import Charts
 import SwiftUI
 import SwiftData
 import ShillingCore
@@ -14,6 +15,7 @@ struct DashboardView: View {
     @State private var showingNewTransactionSheet = false
     @State private var showingImportSheet = false
     @State private var cardsVisible = false
+    @State private var netWorthSnapshots: [MonthSnapshot] = []
 
     private var currentYear: Int { Calendar.current.component(.year, from: Date()) }
     private var currentMonth: Int { Calendar.current.component(.month, from: Date()) }
@@ -80,7 +82,7 @@ struct DashboardView: View {
         }
         .background(Color.shillingBackground)
         .navigationTitle("Dashboard")
-        .task { loadBudget() }
+        .task { loadDashboardData() }
         .sheet(isPresented: $showingNewAccountSheet) {
             AccountFormSheet(account: nil)
         }
@@ -116,33 +118,111 @@ struct DashboardView: View {
         totalAssets - totalLiabilities
     }
 
+    private var netWorthTrendPoints: [(date: Date, value: Double)] {
+        netWorthSnapshots.map { snapshot in
+            (date: snapshot.date, value: NSDecimalNumber(decimal: snapshot.netWorth).doubleValue)
+        }
+    }
+
+    private var netWorthTrendYDomain: ClosedRange<Double> {
+        let values = netWorthTrendPoints.map(\.value)
+        guard let minValue = values.min(), let maxValue = values.max() else {
+            return -1...1
+        }
+
+        if minValue == maxValue {
+            let baseline = abs(maxValue)
+            let padding = Swift.max(1, baseline * 0.1)
+            return (minValue - padding)...(maxValue + padding)
+        }
+
+        let padding = (maxValue - minValue) * 0.2
+        return (minValue - padding)...(maxValue + padding)
+    }
+
     private var netWorthCard: some View {
         CardView {
-            VStack(spacing: Spacing.sm) {
-                Text("Net Worth")
-                    .font(.shillingCaption)
-                    .foregroundStyle(Color.shillingTextSecondary)
-                AmountText(netWorth, font: .shillingLargeTitleMono)
-                HStack(spacing: Spacing.lg) {
-                    VStack(spacing: Spacing.xxs) {
-                        Text("Assets")
-                            .font(.shillingCaption)
-                            .foregroundStyle(Color.shillingTextTertiary)
-                        Text(FormatHelpers.currency(totalAssets))
-                            .font(.shillingBodyMono)
-                            .foregroundStyle(Color.shillingTextSecondary)
-                    }
-                    VStack(spacing: Spacing.xxs) {
-                        Text("Liabilities")
-                            .font(.shillingCaption)
-                            .foregroundStyle(Color.shillingTextTertiary)
-                        Text(FormatHelpers.currency(totalLiabilities))
-                            .font(.shillingBodyMono)
-                            .foregroundStyle(Color.shillingTextSecondary)
+            ZStack {
+                netWorthTrendBackground
+                VStack(spacing: Spacing.sm) {
+                    Text("Net Worth")
+                        .font(.shillingCaption)
+                        .foregroundStyle(Color.shillingTextSecondary)
+                    AmountText(netWorth, font: .shillingLargeTitleMono)
+                    HStack(spacing: Spacing.lg) {
+                        VStack(spacing: Spacing.xxs) {
+                            Text("Assets")
+                                .font(.shillingCaption)
+                                .foregroundStyle(Color.shillingTextTertiary)
+                            Text(FormatHelpers.currency(totalAssets))
+                                .font(.shillingBodyMono)
+                                .foregroundStyle(Color.shillingTextSecondary)
+                        }
+                        VStack(spacing: Spacing.xxs) {
+                            Text("Liabilities")
+                                .font(.shillingCaption)
+                                .foregroundStyle(Color.shillingTextTertiary)
+                            Text(FormatHelpers.currency(totalLiabilities))
+                                .font(.shillingBodyMono)
+                                .foregroundStyle(Color.shillingTextSecondary)
+                        }
                     }
                 }
             }
             .frame(maxWidth: .infinity)
+        }
+    }
+
+    @ViewBuilder
+    private var netWorthTrendBackground: some View {
+        if netWorthTrendPoints.count >= 2 {
+            Chart {
+                ForEach(Array(netWorthTrendPoints.enumerated()), id: \.offset) { _, point in
+                    AreaMark(
+                        x: .value("Month", point.date),
+                        y: .value("Net Worth", point.value)
+                    )
+                    .interpolationMethod(.catmullRom)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [
+                                ChartColorScheme.balance.opacity(0.16),
+                                ChartColorScheme.balance.opacity(0.03),
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+
+                    LineMark(
+                        x: .value("Month", point.date),
+                        y: .value("Net Worth", point.value)
+                    )
+                    .interpolationMethod(.catmullRom)
+                    .foregroundStyle(ChartColorScheme.balance.opacity(0.45))
+                    .lineStyle(StrokeStyle(lineWidth: 1.5))
+                }
+
+                RuleMark(y: .value("Zero", 0))
+                    .foregroundStyle(Color.shillingBorder.opacity(0.35))
+                    .lineStyle(StrokeStyle(lineWidth: 0.75, dash: [2, 3]))
+            }
+            .chartXAxis(.hidden)
+            .chartYAxis(.hidden)
+            .chartYScale(domain: netWorthTrendYDomain)
+            .chartPlotStyle { plotArea in
+                plotArea.background(.clear)
+            }
+            .allowsHitTesting(false)
+            .frame(maxWidth: .infinity)
+            .frame(height: 150)
+            .mask(
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.85), .black],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
         }
     }
 
@@ -319,12 +399,26 @@ struct DashboardView: View {
 
     // MARK: - Data Loading
 
+    private func loadDashboardData() {
+        loadBudget()
+        loadNetWorthHistory()
+    }
+
     private func loadBudget() {
         let service = BudgetService(context: context)
         do {
             budgetComparisons = try service.monthlySummary(year: currentYear, month: currentMonth)
         } catch {
             budgetComparisons = []
+        }
+    }
+
+    private func loadNetWorthHistory() {
+        let service = ReportService(context: context)
+        do {
+            netWorthSnapshots = try service.netWorthHistory(months: 12)
+        } catch {
+            netWorthSnapshots = []
         }
     }
 }
