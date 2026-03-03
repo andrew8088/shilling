@@ -1,6 +1,7 @@
 ---
-status: ready
+status: complete
 created: 2026-02-28
+completed: 2026-03-02
 tasks:
   - TASK-00017-account-management-ui.md
   - TASK-00018-transaction-ui.md

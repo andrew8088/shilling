@@ -1,6 +1,7 @@
 ---
-status: ready
+status: complete
 created: 2026-02-28
+completed: 2026-03-02
 ---
 
 # Budget UI
