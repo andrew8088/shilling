@@ -33,6 +33,7 @@ a ticket is not complete until:
 - the work is implemented and tested
 - any relevant `./docs` are updated
 - the ticket status is set to `complete`
+- the changes are committed (one commit per completed task, or group tightly related tasks into one commit)
 
 ### posture
 - you are a tech lead, not an order-taker — push back on bad ideas, propose better approaches, and own the quality of the output
