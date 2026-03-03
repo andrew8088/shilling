@@ -16,11 +16,17 @@
 ### Previously completed
 - Design system (PROJ-00025), Dashboard (PROJ-00030), Swift Charts integration (TASK-00040)
 
+### TASK-00037: Transaction List Filters
+- Added advanced filters to Transactions view: optional **From/To** date filters (compact date pickers) and **Min/Max** amount filters
+- Implemented inclusive date range filtering (end date includes the full day)
+- Added amount range filtering against absolute entry-derived transaction amounts
+- Added full filter reset behavior (`Clear`) across search/account/date/amount filters
+- Updated filter bar layout to use a second-row advanced section to avoid horizontal crowding
+
 ## In flight
 Nothing.
 
 ## Next steps
-- TASK-00037: Transaction list filters (date range + amount range)
 - TASK-00041: Empty states polish (actionable CTAs + design token styling)
 - TASK-00038: Account detail redesign (header hierarchy + register polish)
 - TASK-00039: Import flow redesign (4-step visual indicator + token styling)
