@@ -8,6 +8,7 @@ struct SidebarView: View {
     @Query(sort: \Account.name) private var allAccounts: [Account]
 
     @State private var showingNewAccountSheet = false
+    @State private var showingImportSheet = false
     @State private var showArchived = false
 
     private func rootAccounts(for type: AccountType) -> [Account] {
@@ -53,6 +54,13 @@ struct SidebarView: View {
                 }
             }
             ToolbarItem(placement: .automatic) {
+                Button {
+                    showingImportSheet = true
+                } label: {
+                    Label("Import CSV", systemImage: "square.and.arrow.down")
+                }
+            }
+            ToolbarItem(placement: .automatic) {
                 Toggle(isOn: $showArchived) {
                     Label("Show Archived", systemImage: "archivebox")
                 }
@@ -61,6 +69,9 @@ struct SidebarView: View {
         }
         .sheet(isPresented: $showingNewAccountSheet) {
             AccountFormSheet(account: nil)
+        }
+        .sheet(isPresented: $showingImportSheet) {
+            ImportCSVView()
         }
     }
 

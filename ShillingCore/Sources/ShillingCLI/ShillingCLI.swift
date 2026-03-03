@@ -9,6 +9,7 @@ struct ShillingCLI: ParsableCommand {
         version: ShillingCoreInfo.version,
         subcommands: [
             Accounts.self,
+            ImportCSV.self,
         ]
     )
 }
