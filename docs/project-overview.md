@@ -52,6 +52,7 @@ xcodebuild \
 ```
 
 CI verification is defined in `.github/workflows/ci.yml` and runs the same checks on pull requests and pushes to `main`.
+The workflow explicitly selects `latest-stable` Xcode in both jobs so package/test and app builds use a modern, consistent Swift toolchain.
 
 ## Local Release Build Automation
 
