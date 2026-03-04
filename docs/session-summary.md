@@ -1,30 +1,23 @@
 # Session Summary - 2026-03-04
 
 ## Completed
-- Created and completed migration pipeline tickets:
-  - `PROJ-00102-postgres-to-migration-sqlite-pipeline.md`
-  - `TASK-00103-build-postgres-to-migration-sqlite-exporter.md`
-  - `TASK-00104-document-migration-format-and-runbook.md`
-- Added exporter script:
-  - `scripts/export-legacy-postgres-to-migration-sqlite.py`
-  - Exports legacy Postgres family data into a deterministic migration SQLite DB with:
-    - source-fidelity `raw_*` tables
-    - target-shaped `target_*` tables
-    - mapping tables and warning diagnostics
-    - invariant enforcement (2 entries/tx, one debit + one credit, balanced amounts)
-- Added automation target:
-  - `make export-legacy-migration-sqlite`
-- Added migration docs:
-  - `docs/legacy-postgres-migration-sqlite-format.md`
-  - updated `docs/project-overview.md` with migration export usage
-- Validated end-to-end against `maybe_2026_03_03`:
-  - output: `/tmp/legacy-migration.sqlite`
-  - `raw_transactions=8408`, `target_transactions=8059`, `target_entries=16118`
-  - export completed with invariant checks passing
+- Investigated GitHub Actions failures with `gh`, and completed:
+  - `PROJ-00105-investigate-and-fix-github-ci-failure.md`
+  - `TASK-00106-reproduce-diagnose-and-fix-ci-workflow.md`
+- Updated CI workflow (`.github/workflows/ci.yml`):
+  - jobs run on `macos-latest`
+  - explicit Xcode selection via `maxim-lobanov/setup-xcode@v1` (`latest-stable`)
+  - app build disables code signing (`CODE_SIGNING_ALLOWED=NO`, `CODE_SIGNING_REQUIRED=NO`)
+- Updated test container setup (`ShillingCore/Sources/ShillingCore/ModelContainerSetup.swift`) to use isolated temporary SwiftData stores in tests.
+- Updated toolchain/signing CI notes in `docs/project-overview.md`.
+- Verified:
+  - local `swift test --disable-automatic-resolution` passes
+  - local app `xcodebuild ... build` passes
+  - GitHub Actions CI run `22671519114` passed on `main`
 
 ## In flight
 - Existing unrelated ticket remains open:
   - `TASK-00100-set-macos-app-category-metadata.md`
 
 ## Next logical step
-- Build a dedicated importer that reads `target_*` from migration SQLite and writes into Shilling via `ModelContext` (not direct SQL into SwiftData internals).
+- Resume the next prioritized product task (currently `TASK-00100-set-macos-app-category-metadata.md` unless priorities changed).
