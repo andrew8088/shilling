@@ -1,24 +1,18 @@
 # Session Summary — 2026-03-04
 
 ## Completed
-- Completed `TASK-00050-remove-force-unwrapped-enum-decoding` and cascaded `PROJ-00046-audit-hardening-followups` to `complete`.
-- Replaced force-unwrapped enum decoding in model computed properties:
-  - `Account.type` now decodes persisted raw values safely
-  - `Entry.type` now decodes persisted raw values safely
-- Added lenient decoding behavior (`trim + lowercase`) for enum-backed persisted strings.
-- Defined explicit fallback behavior for malformed persisted values to prevent crashes:
-  - invalid `accountType` falls back to `.asset`
-  - invalid `entryType` falls back to `.debit`
-- Added regression tests in `ShillingCoreTests.swift` for:
-  - invalid persisted enum raw values (no crash, deterministic fallback)
-  - case/whitespace normalization for enum raw values
-- Updated `docs/architecture.md` with enum-decoding compatibility behavior.
-- Verification passed:
-  - `swift test --disable-automatic-resolution` in `ShillingCore`
-  - macOS app build check via `xcodebuild`
+- Reviewed current product scope against shipped code and identified six high-priority feature gaps for a personal budget/expense tracker.
+- Created a new backlog wave in `todos/`:
+  - `PROJ-00054-reconciliation-workflow`
+  - `PROJ-00059-import-categorization-rules-and-review-queue`
+  - `PROJ-00064-recurring-transactions-and-bill-scheduling`
+  - `PROJ-00069-rollover-budgets-and-sinking-funds`
+  - `PROJ-00074-backup-export-and-restore`
+  - `PROJ-00079-cli-parity-for-power-users`
+- Added all child task tickets `TASK-00055` through `TASK-00083` (matching each project’s scope), all with status `ready`.
 
 ## In flight
 - No tickets currently in `wip`.
 
 ## Next logical step
-- Define the next project/ticket set (all existing `./todos` tickets are currently `complete`).
+- Start `TASK-00055-add-entry-clear-and-reconcile-state` under `PROJ-00054` to establish reconciliation data primitives before UI and workflow work.
