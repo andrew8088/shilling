@@ -332,6 +332,12 @@ public struct MigrationSQLiteImportService {
         if let date = Self.timestampFormatter.date(from: rawValue) {
             return date
         }
+        if let date = Self.timestampFractional6Formatter.date(from: rawValue) {
+            return date
+        }
+        if let date = Self.timestampFractional3Formatter.date(from: rawValue) {
+            return date
+        }
         if let date = Self.isoWithoutTimezoneFormatter.date(from: rawValue) {
             return date
         }
@@ -407,6 +413,22 @@ public struct MigrationSQLiteImportService {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter
+    }()
+
+    private static let timestampFractional6Formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSSSSS"
+        return formatter
+    }()
+
+    private static let timestampFractional3Formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
         return formatter
     }()
 
