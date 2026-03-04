@@ -1,21 +1,30 @@
 # Session Summary - 2026-03-04
 
 ## Completed
-- Completed release build automation:
-  - `PROJ-00098-automate-local-macos-release-build.md`
-  - `TASK-00099-add-macos-release-build-automation.md`
-  - Added `scripts/build-macos-app.sh` and `Makefile` targets (`app-release`, `app-install`, `app-install-open`).
-- Completed app category metadata fix:
-  - `TASK-00100-set-macos-app-category-metadata.md`
-  - Added `INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.finance` for `Shilling` Debug/Release.
-  - Verified `make app-release` no longer emits "No App Category is set".
-- Completed Xcode user-data cleanup:
-  - `TASK-00101-ignore-and-remove-xcode-xcuserdata.md`
-  - Updated `.gitignore` to enforce `**/xcuserdata/`.
-  - Removed tracked `xcuserdata` files from version control.
+- Created and completed migration pipeline tickets:
+  - `PROJ-00102-postgres-to-migration-sqlite-pipeline.md`
+  - `TASK-00103-build-postgres-to-migration-sqlite-exporter.md`
+  - `TASK-00104-document-migration-format-and-runbook.md`
+- Added exporter script:
+  - `scripts/export-legacy-postgres-to-migration-sqlite.py`
+  - Exports legacy Postgres family data into a deterministic migration SQLite DB with:
+    - source-fidelity `raw_*` tables
+    - target-shaped `target_*` tables
+    - mapping tables and warning diagnostics
+    - invariant enforcement (2 entries/tx, one debit + one credit, balanced amounts)
+- Added automation target:
+  - `make export-legacy-migration-sqlite`
+- Added migration docs:
+  - `docs/legacy-postgres-migration-sqlite-format.md`
+  - updated `docs/project-overview.md` with migration export usage
+- Validated end-to-end against `maybe_2026_03_03`:
+  - output: `/tmp/legacy-migration.sqlite`
+  - `raw_transactions=8408`, `target_transactions=8059`, `target_entries=16118`
+  - export completed with invariant checks passing
 
 ## In flight
-- No active `wip` ticket.
+- Existing unrelated ticket remains open:
+  - `TASK-00100-set-macos-app-category-metadata.md`
 
 ## Next logical step
-- Resume product roadmap execution at `TASK-00060-add-import-rule-model-and-matching-engine.md` under `PROJ-00096`.
+- Build a dedicated importer that reads `target_*` from migration SQLite and writes into Shilling via `ModelContext` (not direct SQL into SwiftData internals).

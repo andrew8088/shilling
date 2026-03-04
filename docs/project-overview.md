@@ -72,3 +72,23 @@ The app bundle produced by the archive flow is at:
 `/tmp/Shilling.xcarchive/Products/Applications/Shilling.app`
 
 All targets call `scripts/build-macos-app.sh`, which supports env overrides (for example `ARCHIVE_PATH`, `DERIVED_DATA_PATH`, `INSTALL_DIR`).
+
+## Legacy Migration Export
+
+Export legacy Postgres data into a migration SQLite file (raw + target-shaped tables):
+
+```bash
+make export-legacy-migration-sqlite LEGACY_PG_DB=<source-db>
+```
+
+Overrides:
+
+```bash
+make export-legacy-migration-sqlite \
+  LEGACY_PG_DB=<source-db> \
+  LEGACY_MIGRATION_SQLITE=/tmp/legacy-migration.sqlite \
+  LEGACY_FAMILY_ID=<family-uuid>
+```
+
+Detailed format and validation docs:
+- `docs/legacy-postgres-migration-sqlite-format.md`
