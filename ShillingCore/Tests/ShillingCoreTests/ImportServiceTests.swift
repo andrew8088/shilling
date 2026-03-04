@@ -243,6 +243,83 @@ struct ImportServiceTests {
         #expect(transactions.count == 2)
     }
 
+    @Test @MainActor
+    func duplicateDetectionWithinSameBatchSkipsSubsequentRows() throws {
+        let (_, context, service) = try makeService()
+
+        let chequing = Account(name: "Chequing", type: .asset)
+        let expense = Account(name: "Expenses", type: .expense)
+        context.insert(chequing)
+        context.insert(expense)
+
+        let rows = [
+            row(["Date": "2026-01-15", "Payee": "Grocery Store", "Amount": "-55.00"], line: 2),
+            row(["Date": "2026-01-15", "Payee": "Grocery Store", "Amount": "-55.00"], line: 3), // duplicate within same batch
+        ]
+
+        let result = try service.importRows(
+            rows,
+            mapping: signedAmountMapping,
+            account: chequing,
+            contraAccount: expense,
+            fileName: "bank.csv"
+        )
+
+        #expect(result.importedCount == 1)
+        #expect(result.skippedDuplicates == 1)
+
+        let txDescriptor = FetchDescriptor<Transaction>()
+        let transactions = try context.fetch(txDescriptor)
+        #expect(transactions.count == 1)
+    }
+
+    @Test @MainActor
+    func duplicateDetectionTreatsOppositeSignedAmountsAsDistinctSemantics() throws {
+        let (_, context, service) = try makeService()
+
+        let chequing = Account(name: "Chequing", type: .asset)
+        let expense = Account(name: "Expenses", type: .expense)
+        context.insert(chequing)
+        context.insert(expense)
+
+        let purchaseRows = [
+            row(["Date": "2026-01-15", "Payee": "Grocery Store", "Amount": "-55.00"], line: 2),
+        ]
+        let refundRows = [
+            row(["Date": "2026-01-15", "Payee": "Grocery Store", "Amount": "55.00"], line: 2),
+        ]
+
+        let firstImport = try service.importRows(
+            purchaseRows,
+            mapping: signedAmountMapping,
+            account: chequing,
+            contraAccount: expense,
+            fileName: "purchase.csv"
+        )
+        #expect(firstImport.importedCount == 1)
+
+        let secondImport = try service.importRows(
+            refundRows,
+            mapping: signedAmountMapping,
+            account: chequing,
+            contraAccount: expense,
+            fileName: "refund.csv"
+        )
+        #expect(secondImport.importedCount == 1)
+        #expect(secondImport.skippedDuplicates == 0)
+
+        let txDescriptor = FetchDescriptor<Transaction>()
+        let transactions = try context.fetch(txDescriptor)
+        #expect(transactions.count == 2)
+
+        let chequingEntries = transactions.compactMap { transaction in
+            transaction.entries.first(where: { $0.account?.id == chequing.id })
+        }
+        #expect(chequingEntries.count == 2)
+        #expect(chequingEntries.contains(where: { $0.type == .credit && $0.amount == 55.00 }))
+        #expect(chequingEntries.contains(where: { $0.type == .debit && $0.amount == 55.00 }))
+    }
+
     // MARK: - 5. Partial duplicates
 
     @Test @MainActor

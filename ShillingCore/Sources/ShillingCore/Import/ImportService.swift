@@ -87,6 +87,18 @@ public struct ImportResult {
 
 public struct ImportService {
     private let context: ModelContext
+    private static var fingerprintCalendar: Calendar = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return calendar
+    }()
+
+    private struct TransactionFingerprint: Hashable {
+        let date: Date
+        let normalizedPayee: String
+        let accountID: UUID
+        let signedAmount: String
+    }
 
     public init(context: ModelContext) {
         self.context = context
@@ -115,6 +127,11 @@ public struct ImportService {
         // Fetch all existing transactions once for duplicate checking.
         let descriptor = FetchDescriptor<Transaction>()
         let existingTransactions = try context.fetch(descriptor)
+        let accountID = account.id
+
+        var knownFingerprints = Set(existingTransactions.compactMap { existing in
+            fingerprint(for: existing, account: account, accountID: accountID)
+        })
 
         var importedCount = 0
         var skippedDuplicates = 0
@@ -167,17 +184,14 @@ public struct ImportService {
                 signedAmount: signedAmount
             )
 
-            // 7. Duplicate detection: same date, payee (case-insensitive), and amount
-            //    touching the same account.
-            let isDuplicate = existingTransactions.contains { existing in
-                guard existing.date == date else { return false }
-                guard existing.payee.lowercased() == payee.lowercased() else { return false }
-                let accountID = account.id
-                let touchesAccount = existing.entries.contains { $0.account?.id == accountID }
-                guard touchesAccount else { return false }
-                let hasAmount = existing.entries.contains { $0.amount == absAmount }
-                return hasAmount
-            }
+            // 7. Duplicate detection uses a stable fingerprint that includes sign semantics.
+            let fingerprint = fingerprint(
+                date: date,
+                payee: payee,
+                accountID: accountID,
+                signedAmount: signedAmount
+            )
+            let isDuplicate = knownFingerprints.contains(fingerprint)
 
             if isDuplicate {
                 skippedDuplicates += 1
@@ -201,6 +215,7 @@ public struct ImportService {
             importRecord.transactions.append(transaction)
 
             importedCount += 1
+            knownFingerprints.insert(fingerprint)
         }
 
         return ImportResult(
@@ -238,6 +253,47 @@ public struct ImportService {
         }
 
         return nil
+    }
+
+    private func fingerprint(
+        date: Date,
+        payee: String,
+        accountID: UUID,
+        signedAmount: Decimal
+    ) -> TransactionFingerprint {
+        TransactionFingerprint(
+            date: Self.fingerprintCalendar.startOfDay(for: date),
+            normalizedPayee: payee.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
+            accountID: accountID,
+            signedAmount: NSDecimalNumber(decimal: signedAmount).stringValue
+        )
+    }
+
+    private func fingerprint(
+        for transaction: Transaction,
+        account: Account,
+        accountID: UUID
+    ) -> TransactionFingerprint? {
+        guard let accountEntry = transaction.entries.first(where: { $0.account?.id == accountID }) else {
+            return nil
+        }
+        guard let accountEntryType = EntryType(rawValue: accountEntry.entryType) else {
+            return nil
+        }
+
+        let signedAmount: Decimal
+        if account.type.isDebitNormal {
+            signedAmount = accountEntryType == .debit ? accountEntry.amount : -accountEntry.amount
+        } else {
+            signedAmount = accountEntryType == .credit ? accountEntry.amount : -accountEntry.amount
+        }
+
+        return fingerprint(
+            date: transaction.date,
+            payee: transaction.payee,
+            accountID: accountID,
+            signedAmount: signedAmount
+        )
     }
 
     /// Determine the EntryType for the primary account and contra account based on
