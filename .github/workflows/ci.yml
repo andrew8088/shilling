@@ -54,6 +54,8 @@ jobs:
             -clonedSourcePackagesDirPath "$RUNNER_TEMP/shilling-source-packages" \
             -disableAutomaticPackageResolution \
             -onlyUsePackageVersionsFromResolvedFile \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
             build
 
       - name: Verify Xcode lockfile is unchanged

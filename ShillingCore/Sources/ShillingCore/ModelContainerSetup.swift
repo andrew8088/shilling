@@ -18,7 +18,8 @@ public enum ModelContainerSetup {
 
     /// Creates an in-memory ModelContainer for testing.
     public static func makeInMemory() throws -> ModelContainer {
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        // Explicit name avoids SwiftData bundle-name inference in headless CI test runners.
+        let config = ModelConfiguration("ShillingTests", schema: schema, isStoredInMemoryOnly: true)
         return try ModelContainer(for: schema, configurations: [config])
     }
 }
