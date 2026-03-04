@@ -31,7 +31,7 @@ struct SidebarView: View {
 
     private func typeTotal(for type: AccountType) -> Decimal {
         let service = BalanceService(context: context)
-        return rootAccounts(for: type).reduce(Decimal.zero) { $0 + service.balance(for: $1) }
+        return rootAccounts(for: type).reduce(Decimal.zero) { $0 + service.rollupBalance(for: $1) }
     }
 
     var body: some View {

@@ -1,20 +1,24 @@
-# Session Summary — 2026-03-03
+# Session Summary — 2026-03-04
 
 ## Completed
-- Completed `TASK-00048-harden-import-duplicate-detection` under `PROJ-00046-audit-hardening-followups`.
-- Replaced coarse duplicate detection in `ImportService` with a stable fingerprint (`date + normalized payee + account + signed amount`) that preserves direction/sign semantics.
-- Added same-batch duplicate detection by seeding a fingerprint set from existing transactions and updating it as rows are imported.
-- Added regression tests in `ShillingCore/Tests/ShillingCoreTests/ImportServiceTests.swift` for:
-  - same-batch duplicate skipping
-  - opposite-sign same-day/same-payee transactions importing as distinct records
-- Verification passed: `swift test --filter ImportServiceTests` and full `swift test` in `ShillingCore`.
+- Completed `TASK-00049-add-hierarchy-rollup-balances` under `PROJ-00046-audit-hardening-followups`.
+- Added explicit hierarchy rollup balance paths to `BalanceService`:
+  - `rollupBalance(for:)`
+  - `rollupBalance(for:asOf:)`
+- Updated sidebar and dashboard account-summary totals to use rollup balances for root accounts.
+- Added hierarchy regression tests in `BalanceServiceTests` for:
+  - multi-level rollup aggregation
+  - as-of rollup date filtering
+  - preserved non-rollup behavior for `balance(for:)`
+- Verification passed:
+  - `swift test` in `ShillingCore`
+  - app build check via `xcodebuild` for macOS target
 
 ## In flight
 - `PROJ-00046-audit-hardening-followups` remains `wip`.
 - Remaining child tasks are `ready`:
-  - `TASK-00049-add-hierarchy-rollup-balances`
   - `TASK-00050-remove-force-unwrapped-enum-decoding`
   - `TASK-00051-add-ci-and-lock-dependencies`
 
 ## Next logical step
-- Implement `TASK-00049-add-hierarchy-rollup-balances` (rollup balance path + sidebar/dashboard totals + hierarchy regression tests).
+- Implement `TASK-00050-remove-force-unwrapped-enum-decoding` (replace force-unwrapped enum decoding with safe fallback/error handling + tests).

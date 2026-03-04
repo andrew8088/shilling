@@ -234,7 +234,7 @@ struct DashboardView: View {
             .compactMap { type in
                 let accounts = activeAccounts.filter { $0.type == type && $0.parent == nil }
                 guard !accounts.isEmpty else { return nil }
-                let total = accounts.reduce(Decimal.zero) { $0 + service.balance(for: $1) }
+                let total = accounts.reduce(Decimal.zero) { $0 + service.rollupBalance(for: $1) }
                 return (type: type, accounts: accounts, total: total)
             }
     }

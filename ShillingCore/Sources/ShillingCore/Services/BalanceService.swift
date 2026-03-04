@@ -18,6 +18,15 @@ public struct BalanceService {
         computeBalance(entries: account.entries, accountType: account.type)
     }
 
+    // MARK: - rollupBalance(for:)
+
+    /// Computes the balance of an account including all descendant accounts.
+    public func rollupBalance(for account: Account) -> Decimal {
+        accountsInHierarchy(startingAt: account).reduce(Decimal.zero) { partialResult, currentAccount in
+            partialResult + balance(for: currentAccount)
+        }
+    }
+
     // MARK: - balance(for:asOf:)
 
     /// Computes the balance of an account, including only entries from transactions
@@ -28,6 +37,16 @@ public struct BalanceService {
             return txDate <= date
         }
         return computeBalance(entries: filtered, accountType: account.type)
+    }
+
+    // MARK: - rollupBalance(for:asOf:)
+
+    /// Computes the balance of an account hierarchy including only entries from transactions
+    /// whose date is on or before `date`.
+    public func rollupBalance(for account: Account, asOf date: Date) -> Decimal {
+        accountsInHierarchy(startingAt: account).reduce(Decimal.zero) { partialResult, currentAccount in
+            partialResult + balance(for: currentAccount, asOf: date)
+        }
     }
 
     // MARK: - allBalances(asOf:)
@@ -95,5 +114,19 @@ public struct BalanceService {
     /// Returns the signed balance delta for a set of entries (positive = natural balance increase).
     private func entryDelta(entries: [Entry], accountType: AccountType) -> Decimal {
         computeBalance(entries: entries, accountType: accountType)
+    }
+
+    private func accountsInHierarchy(startingAt root: Account) -> [Account] {
+        var visited: Set<UUID> = []
+        var stack: [Account] = [root]
+        var result: [Account] = []
+
+        while let account = stack.popLast() {
+            guard visited.insert(account.id).inserted else { continue }
+            result.append(account)
+            stack.append(contentsOf: account.children)
+        }
+
+        return result
     }
 }

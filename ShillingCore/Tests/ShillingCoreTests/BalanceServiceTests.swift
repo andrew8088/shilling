@@ -161,6 +161,63 @@ struct BalanceServiceTests {
         #expect(balService.balance(for: checking) == 0)
     }
 
+    // MARK: - rollupBalance(for:)
+
+    @Test @MainActor
+    func rollupBalanceIncludesEntriesAcrossMultipleHierarchyLevels() throws {
+        let (context, txService, balService) = try makeServices()
+
+        let assets = Account(name: "Assets", type: .asset)
+        let cash = Account(name: "Cash", type: .asset, parent: assets)
+        let wallet = Account(name: "Wallet", type: .asset, parent: cash)
+        let equity = Account(name: "Opening Balances", type: .equity)
+        context.insert(assets)
+        context.insert(cash)
+        context.insert(wallet)
+        context.insert(equity)
+
+        try txService.createTransaction(date: Date(), payee: "Root Funding", entries: [
+            EntryData(account: assets, amount: 100.00, type: .debit),
+            EntryData(account: equity, amount: 100.00, type: .credit),
+        ])
+        try txService.createTransaction(date: Date(), payee: "Cash Funding", entries: [
+            EntryData(account: cash, amount: 250.00, type: .debit),
+            EntryData(account: equity, amount: 250.00, type: .credit),
+        ])
+        try txService.createTransaction(date: Date(), payee: "Wallet Funding", entries: [
+            EntryData(account: wallet, amount: 50.00, type: .debit),
+            EntryData(account: equity, amount: 50.00, type: .credit),
+        ])
+
+        #expect(balService.balance(for: assets) == 100.00)
+        #expect(balService.balance(for: cash) == 250.00)
+        #expect(balService.balance(for: wallet) == 50.00)
+
+        #expect(balService.rollupBalance(for: assets) == 400.00)
+        #expect(balService.rollupBalance(for: cash) == 300.00)
+        #expect(balService.rollupBalance(for: wallet) == 50.00)
+    }
+
+    @Test @MainActor
+    func rollupBalancePreservesNonRollupParentBehavior() throws {
+        let (context, txService, balService) = try makeServices()
+
+        let parent = Account(name: "Current Assets", type: .asset)
+        let child = Account(name: "Checking", type: .asset, parent: parent)
+        let equity = Account(name: "Opening Balances", type: .equity)
+        context.insert(parent)
+        context.insert(child)
+        context.insert(equity)
+
+        try txService.createTransaction(date: Date(), payee: "Child Funding", entries: [
+            EntryData(account: child, amount: 500.00, type: .debit),
+            EntryData(account: equity, amount: 500.00, type: .credit),
+        ])
+
+        #expect(balService.balance(for: parent) == 0.00)
+        #expect(balService.rollupBalance(for: parent) == 500.00)
+    }
+
     // MARK: - balance(for:asOf:)
 
     @Test @MainActor
@@ -229,6 +286,48 @@ struct BalanceServiceTests {
 
         // As of pastDate, the future transaction is excluded
         #expect(balService.balance(for: checking, asOf: pastDate) == 0)
+    }
+
+    // MARK: - rollupBalance(for:asOf:)
+
+    @Test @MainActor
+    func rollupBalanceAsOfDateIncludesOnlyMatchingDescendantEntries() throws {
+        let (context, txService, balService) = try makeServices()
+
+        let assets = Account(name: "Assets", type: .asset)
+        let checking = Account(name: "Checking", type: .asset, parent: assets)
+        let savings = Account(name: "Savings", type: .asset, parent: checking)
+        let equity = Account(name: "Opening Balances", type: .equity)
+        context.insert(assets)
+        context.insert(checking)
+        context.insert(savings)
+        context.insert(equity)
+
+        let jan1 = Date(timeIntervalSince1970: 1_735_689_600) // 2025-01-01
+        let mar1 = Date(timeIntervalSince1970: 1_740_787_200) // 2025-03-01
+        let may1 = Date(timeIntervalSince1970: 1_746_057_600) // 2025-05-01
+
+        try txService.createTransaction(date: jan1, payee: "Checking Funding", entries: [
+            EntryData(account: checking, amount: 100.00, type: .debit),
+            EntryData(account: equity, amount: 100.00, type: .credit),
+        ])
+        try txService.createTransaction(date: mar1, payee: "Savings Funding", entries: [
+            EntryData(account: savings, amount: 200.00, type: .debit),
+            EntryData(account: equity, amount: 200.00, type: .credit),
+        ])
+        try txService.createTransaction(date: may1, payee: "Root Funding", entries: [
+            EntryData(account: assets, amount: 50.00, type: .debit),
+            EntryData(account: equity, amount: 50.00, type: .credit),
+        ])
+
+        let feb1 = Date(timeIntervalSince1970: 1_738_368_000) // 2025-02-01
+        let apr1 = Date(timeIntervalSince1970: 1_743_465_600) // 2025-04-01
+        let jun1 = Date(timeIntervalSince1970: 1_748_649_600) // 2025-06-01
+
+        #expect(balService.rollupBalance(for: assets, asOf: feb1) == 100.00)
+        #expect(balService.rollupBalance(for: assets, asOf: apr1) == 300.00)
+        #expect(balService.rollupBalance(for: assets, asOf: jun1) == 350.00)
+        #expect(balService.rollupBalance(for: checking, asOf: apr1) == 300.00)
     }
 
     // MARK: - allBalances(asOf:)
