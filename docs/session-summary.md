@@ -1,18 +1,17 @@
 # Session Summary — 2026-03-04
 
 ## Completed
-- Reviewed current product scope against shipped code and identified six high-priority feature gaps for a personal budget/expense tracker.
-- Created a new backlog wave in `todos/`:
-  - `PROJ-00054-reconciliation-workflow`
-  - `PROJ-00059-import-categorization-rules-and-review-queue`
-  - `PROJ-00064-recurring-transactions-and-bill-scheduling`
-  - `PROJ-00069-rollover-budgets-and-sinking-funds`
-  - `PROJ-00074-backup-export-and-restore`
-  - `PROJ-00079-cli-parity-for-power-users`
-- Added all child task tickets `TASK-00055` through `TASK-00083` (matching each project’s scope), all with status `ready`.
+- Created import-research tracking tickets:
+  - `PROJ-00084-postgres-import-mapping-research`
+  - `TASK-00085-inventory-legacy-postgres-schema` (now `complete`)
+  - `TASK-00086-map-legacy-schema-to-shilling-model` (set to `wip`)
+  - `TASK-00087-propose-import-capability-gap-tasks` (`ready`)
+- Deeply explored legacy Postgres schema/data in `maybe_2026_03_03` across accounts, entries, transactions, transfers, budgets, categories, imports, rules, taggings, enrichments, valuations, and balances.
+- Wrote handoff document with findings and continuation instructions:
+  - `docs/legacy-postgres-import-mapping-handoff.md`
 
 ## In flight
-- No tickets currently in `wip`.
+- `TASK-00086-map-legacy-schema-to-shilling-model`: finalize deterministic legacy->Shilling mapping rules and write final research doc.
 
 ## Next logical step
-- Start `TASK-00055-add-entry-clear-and-reconcile-state` under `PROJ-00054` to establish reconciliation data primitives before UI and workflow work.
+- Produce `docs/legacy-postgres-import-mapping-research.md` from the handoff findings, then execute `TASK-00087` by creating recommended capability-gap tickets for full-fidelity import.
