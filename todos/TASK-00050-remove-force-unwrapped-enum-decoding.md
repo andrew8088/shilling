@@ -1,6 +1,7 @@
 ---
-status: ready
+status: complete
 created: 2026-03-03
+completed: 2026-03-04
 ---
 
 # Remove Force-Unwrapped Enum Decoding

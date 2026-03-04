@@ -22,7 +22,9 @@ public final class Account {
     public var budgets: [Budget]
 
     public var type: AccountType {
-        get { AccountType(rawValue: accountType)! }
+        get {
+            decodeAccountType(from: accountType) ?? .asset
+        }
         set { accountType = newValue.rawValue }
     }
 
@@ -43,5 +45,14 @@ public final class Account {
         self.createdAt = Date()
         self.entries = []
         self.budgets = []
+    }
+
+    private func decodeAccountType(from rawValue: String) -> AccountType? {
+        if let decoded = AccountType(rawValue: rawValue) {
+            return decoded
+        }
+
+        let normalized = rawValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return AccountType(rawValue: normalized)
     }
 }

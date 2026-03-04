@@ -153,6 +153,35 @@ struct AccountTests {
         #expect(account.accountType == "liability")
     }
 
+    @Test @MainActor func accountTypeFallsBackForInvalidPersistedRawValue() throws {
+        let container = try ModelContainerSetup.makeInMemory()
+        let context = ModelContext(container)
+
+        let account = Account(name: "Malformed", type: .asset)
+        context.insert(account)
+        try context.save()
+
+        account.accountType = "not-a-real-type"
+        try context.save()
+
+        #expect(account.type == .asset)
+        #expect(account.accountType == "not-a-real-type")
+    }
+
+    @Test @MainActor func accountTypeDecodesCaseAndWhitespaceVariations() throws {
+        let container = try ModelContainerSetup.makeInMemory()
+        let context = ModelContext(container)
+
+        let account = Account(name: "Normalized", type: .asset)
+        context.insert(account)
+        try context.save()
+
+        account.accountType = "  LiABility  "
+        try context.save()
+
+        #expect(account.type == .liability)
+    }
+
     @Test @MainActor func parentChildRelationship() throws {
         let container = try ModelContainerSetup.makeInMemory()
         let context = ModelContext(container)
@@ -344,6 +373,41 @@ struct EntryTests {
 
         #expect(entry.type == .credit)
         #expect(entry.entryType == "credit")
+    }
+
+    @Test @MainActor func entryTypeFallsBackForInvalidPersistedRawValue() throws {
+        let container = try ModelContainerSetup.makeInMemory()
+        let context = ModelContext(container)
+
+        let account = Account(name: "Checking", type: .asset)
+        context.insert(account)
+
+        let entry = Entry(account: account, amount: 50.00, type: .credit)
+        context.insert(entry)
+        try context.save()
+
+        entry.entryType = "unexpected"
+        try context.save()
+
+        #expect(entry.type == .debit)
+        #expect(entry.entryType == "unexpected")
+    }
+
+    @Test @MainActor func entryTypeDecodesCaseAndWhitespaceVariations() throws {
+        let container = try ModelContainerSetup.makeInMemory()
+        let context = ModelContext(container)
+
+        let account = Account(name: "Checking", type: .asset)
+        context.insert(account)
+
+        let entry = Entry(account: account, amount: 20.00, type: .debit)
+        context.insert(entry)
+        try context.save()
+
+        entry.entryType = "  CREDIT  "
+        try context.save()
+
+        #expect(entry.type == .credit)
     }
 
     @Test @MainActor func createEntryWithMemo() throws {

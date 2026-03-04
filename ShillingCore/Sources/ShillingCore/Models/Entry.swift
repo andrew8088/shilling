@@ -11,7 +11,9 @@ public final class Entry {
     public var memo: String?
 
     public var type: EntryType {
-        get { EntryType(rawValue: entryType)! }
+        get {
+            decodeEntryType(from: entryType) ?? .debit
+        }
         set { entryType = newValue.rawValue }
     }
 
@@ -26,5 +28,14 @@ public final class Entry {
         self.amount = amount
         self.entryType = type.rawValue
         self.memo = memo
+    }
+
+    private func decodeEntryType(from rawValue: String) -> EntryType? {
+        if let decoded = EntryType(rawValue: rawValue) {
+            return decoded
+        }
+
+        let normalized = rawValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return EntryType(rawValue: normalized)
     }
 }

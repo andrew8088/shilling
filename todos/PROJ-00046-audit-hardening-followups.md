@@ -1,6 +1,7 @@
 ---
-status: wip
+status: complete
 created: 2026-03-03
+completed: 2026-03-04
 tasks:
   - TASK-00047-fix-budget-net-spend-semantics.md
   - TASK-00048-harden-import-duplicate-detection.md

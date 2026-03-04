@@ -63,6 +63,7 @@ Command-line interface using swift-argument-parser:
 - `isArchived: Bool`
 - `notes: String?`
 - `createdAt: Date`
+- compatibility: persisted `accountType` raw strings are decoded leniently (`trim + lowercase`); invalid values fall back to `.asset` instead of crashing
 
 ### Transaction (Journal Entry)
 - `id: UUID`
@@ -79,6 +80,7 @@ Command-line interface using swift-argument-parser:
 - `amount: Decimal` — always positive
 - `type: EntryType` — `.debit` or `.credit`
 - `memo: String?`
+- compatibility: persisted `entryType` raw strings are decoded leniently (`trim + lowercase`); invalid values fall back to `.debit` instead of crashing
 
 ### Budget
 - `id: UUID`
