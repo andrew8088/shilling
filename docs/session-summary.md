@@ -1,24 +1,23 @@
 # Session Summary — 2026-03-04
 
 ## Completed
-- Completed `TASK-00049-add-hierarchy-rollup-balances` under `PROJ-00046-audit-hardening-followups`.
-- Added explicit hierarchy rollup balance paths to `BalanceService`:
-  - `rollupBalance(for:)`
-  - `rollupBalance(for:asOf:)`
-- Updated sidebar and dashboard account-summary totals to use rollup balances for root accounts.
-- Added hierarchy regression tests in `BalanceServiceTests` for:
-  - multi-level rollup aggregation
-  - as-of rollup date filtering
-  - preserved non-rollup behavior for `balance(for:)`
-- Verification passed:
-  - `swift test` in `ShillingCore`
-  - app build check via `xcodebuild` for macOS target
+- Completed `TASK-00051-add-ci-and-lock-dependencies` under `PROJ-00046-audit-hardening-followups`.
+- Added CI workflow at `.github/workflows/ci.yml` with:
+  - `ShillingCore` deterministic dependency resolve + lockfile drift check + `swift test --disable-automatic-resolution`
+  - macOS app build using `xcodebuild -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile`
+- Stopped globally ignoring `Package.resolved` by removing it from `.gitignore`.
+- Added lockfiles to version control for reproducible dependency resolution:
+  - `ShillingCore/Package.resolved`
+  - `Shilling/Shilling.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`
+- Updated `docs/project-overview.md` with local deterministic verification commands and CI reference.
+- Verification passed locally:
+  - `swift package resolve` + `swift test --disable-automatic-resolution` in `ShillingCore`
+  - deterministic app build with `xcodebuild` flags above
 
 ## In flight
 - `PROJ-00046-audit-hardening-followups` remains `wip`.
-- Remaining child tasks are `ready`:
-  - `TASK-00050-remove-force-unwrapped-enum-decoding`
-  - `TASK-00051-add-ci-and-lock-dependencies`
+- Remaining child task:
+  - `TASK-00050-remove-force-unwrapped-enum-decoding` (`ready`)
 
 ## Next logical step
-- Implement `TASK-00050-remove-force-unwrapped-enum-decoding` (replace force-unwrapped enum decoding with safe fallback/error handling + tests).
+- Implement `TASK-00050-remove-force-unwrapped-enum-decoding` (safe enum decoding fallback/error behavior + invalid persisted value tests).

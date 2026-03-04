@@ -28,3 +28,27 @@ A self-hostable personal budgeting and expense tracking application for macOS.
 - Net worth over time
 - Cash flow
 - Balance sheet
+
+## Verification
+
+Local deterministic verification commands:
+
+```bash
+# ShillingCore (uses ShillingCore/Package.resolved)
+cd ShillingCore
+swift package resolve
+swift test --disable-automatic-resolution
+
+# App build (uses Xcode workspace Package.resolved)
+xcodebuild \
+  -project /Users/andrew/code/shilling/Shilling/Shilling.xcodeproj \
+  -scheme Shilling \
+  -destination 'platform=macOS' \
+  -derivedDataPath /tmp/shilling-deriveddata \
+  -clonedSourcePackagesDirPath /tmp/shilling-source-packages \
+  -disableAutomaticPackageResolution \
+  -onlyUsePackageVersionsFromResolvedFile \
+  build
+```
+
+CI verification is defined in `.github/workflows/ci.yml` and runs the same checks on pull requests and pushes to `main`.

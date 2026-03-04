@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  shillingcore-tests:
+    name: ShillingCore Tests
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: ShillingCore
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve SwiftPM dependencies
+        run: swift package resolve
+
+      - name: Verify lockfile is up to date
+        run: git diff --exit-code -- Package.resolved
+
+      - name: Run tests
+        run: swift test --disable-automatic-resolution
+
+  app-build:
+    name: App Build
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build app using resolved package versions
+        run: |
+          xcodebuild \
+            -project Shilling/Shilling.xcodeproj \
+            -scheme Shilling \
+            -destination 'platform=macOS' \
+            -derivedDataPath "$RUNNER_TEMP/shilling-deriveddata" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/shilling-source-packages" \
+            -disableAutomaticPackageResolution \
+            -onlyUsePackageVersionsFromResolvedFile \
+            build
+
+      - name: Verify Xcode lockfile is unchanged
+        run: git diff --exit-code -- Shilling/Shilling.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
