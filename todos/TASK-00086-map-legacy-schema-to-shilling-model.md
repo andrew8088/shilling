@@ -1,5 +1,7 @@
-status: wip
+---
+status: complete
 created: 2026-03-04
+completed: 2026-03-04
 ---
 Context: schema inventory is complete and we need a deterministic transformation design into Shilling.
 

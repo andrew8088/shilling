@@ -1,6 +1,7 @@
 ---
-status: wip
+status: complete
 created: 2026-03-04
+completed: 2026-03-04
 tasks:
   - TASK-00085-inventory-legacy-postgres-schema.md
   - TASK-00086-map-legacy-schema-to-shilling-model.md
