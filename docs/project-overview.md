@@ -52,3 +52,23 @@ xcodebuild \
 ```
 
 CI verification is defined in `.github/workflows/ci.yml` and runs the same checks on pull requests and pushes to `main`.
+
+## Local Release Build Automation
+
+Use the repository build automation to produce a local release archive and app bundle:
+
+```bash
+# Archive release build to /tmp/Shilling.xcarchive
+make app-release
+
+# Archive and install to ~/Applications/Shilling.app
+make app-install
+
+# Archive, install, and open the app
+make app-install-open
+```
+
+The app bundle produced by the archive flow is at:
+`/tmp/Shilling.xcarchive/Products/Applications/Shilling.app`
+
+All targets call `scripts/build-macos-app.sh`, which supports env overrides (for example `ARCHIVE_PATH`, `DERIVED_DATA_PATH`, `INSTALL_DIR`).

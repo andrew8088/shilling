@@ -1,20 +1,20 @@
 # Session Summary - 2026-03-04
 
 ## Completed
-- Re-scoped backlog to a lean user-facing roadmap:
-  - `PROJ-00096-user-facing-import-and-trust-workflows.md` (new)
-- Created explicit demand-gate ticket:
-  - `TASK-00097-validate-demand-for-deferred-fidelity-features.md` (new)
-- Converted legacy parity project into a parked backlog:
-  - `PROJ-00088-legacy-postgres-import-fidelity-gaps.md` -> `blocked-by-TASK-00097`
-- Marked low user-facing-value tasks as parked/deferred:
-  - `TASK-00091` to `TASK-00095` -> `blocked-by-TASK-00097`
-- Updated research doc recommendations to reflect active vs parked tracks:
-  - `docs/legacy-postgres-import-mapping-research.md`
+- Created and completed release automation tickets:
+  - `PROJ-00098-automate-local-macos-release-build.md`
+  - `TASK-00099-add-macos-release-build-automation.md`
+- Added local macOS release automation:
+  - `scripts/build-macos-app.sh` for `xcodebuild archive` with env-overridable paths and optional local install/open.
+  - `Makefile` targets: `app-release`, `app-install`, `app-install-open`.
+- Updated `docs/project-overview.md` with the new automated workflow.
+- Validated end-to-end:
+  - `make app-release` succeeded and produced `/tmp/Shilling.xcarchive/Products/Applications/Shilling.app`.
+  - `make app-install` succeeded and installed `/Users/andrew/Applications/Shilling.app`.
 
 ## In flight
 - No active `wip` ticket.
-- Active execution queue starts at `PROJ-00096` with import rules/review, transfer lifecycle, reconciliation, and minimal metadata.
+- Residual warning during archive remains: target `Shilling` has no app category (`LSApplicationCategoryType`).
 
 ## Next logical step
-- Start `TASK-00060-add-import-rule-model-and-matching-engine.md` as the first concrete user-facing leverage point in `PROJ-00096`.
+- Add app category metadata to remove the archive warning and keep release builds warning-clean.
