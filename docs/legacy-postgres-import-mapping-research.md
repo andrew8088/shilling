@@ -164,9 +164,11 @@ Legacy `imports`/`entries.import_id` -> Shilling `ImportRecord`
 - One transfer pair appears both confirmed and rejected; rejected should win.
 
 ## Recommended Backlog
-New backlog created under `PROJ-00088-legacy-postgres-import-fidelity-gaps.md`:
-- `TASK-00089-add-source-metadata-envelope-for-import-fidelity.md`
-- `TASK-00090-add-transfer-link-and-lifecycle-model.md`
+Active roadmap (user-facing first):
+- `PROJ-00096-user-facing-import-and-trust-workflows.md`
+
+Parked fidelity/parity backlog (deferred pending explicit demand):
+- `PROJ-00088-legacy-postgres-import-fidelity-gaps.md`
 - `TASK-00091-add-tag-model-and-transaction-tagging.md`
 - `TASK-00092-add-valuation-snapshot-model-and-import.md`
 - `TASK-00093-add-daily-balance-snapshot-model-and-import.md`

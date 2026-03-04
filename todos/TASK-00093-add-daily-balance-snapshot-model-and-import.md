@@ -1,5 +1,5 @@
 ---
-status: ready
+status: blocked-by-TASK-00097-validate-demand-for-deferred-fidelity-features.md
 created: 2026-03-04
 ---
 Context: legacy `balances` contains daily account snapshots and flow decomposition that cannot be represented today.

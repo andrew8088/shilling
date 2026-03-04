@@ -1,5 +1,5 @@
 ---
-status: ready
+status: blocked-by-TASK-00097-validate-demand-for-deferred-fidelity-features.md
 created: 2026-03-04
 ---
 Context: legacy rules support nested condition trees (`parent_id`) and action imports that exceed current planned flat rule assumptions.
