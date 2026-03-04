@@ -18,6 +18,9 @@
 ## In flight
 - Existing unrelated ticket remains open:
   - `TASK-00100-set-macos-app-category-metadata.md`
+- Newly queued migration importer work:
+  - `PROJ-00107-build-migration-sqlite-importer.md`
+  - `TASK-00108-implement-migration-sqlite-importer-via-modelcontext.md`
 
 ## Next logical step
-- Resume the next prioritized product task (currently `TASK-00100-set-macos-app-category-metadata.md` unless priorities changed).
+- Start `TASK-00108-implement-migration-sqlite-importer-via-modelcontext.md` under `PROJ-00107-build-migration-sqlite-importer.md`.
