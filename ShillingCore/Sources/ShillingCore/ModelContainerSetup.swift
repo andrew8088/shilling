@@ -18,8 +18,15 @@ public enum ModelContainerSetup {
 
     /// Creates an in-memory ModelContainer for testing.
     public static func makeInMemory() throws -> ModelContainer {
-        // Explicit name avoids SwiftData bundle-name inference in headless CI test runners.
-        let config = ModelConfiguration("ShillingTests", schema: schema, isStoredInMemoryOnly: true)
+        // SwiftData in-memory stores can crash on older CI toolchains when Bundle metadata is absent.
+        // Use an isolated temporary store URL per container to keep tests hermetic across environments.
+        let testsDir = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "shilling-tests",
+            isDirectory: true
+        )
+        try FileManager.default.createDirectory(at: testsDir, withIntermediateDirectories: true)
+        let storeURL = testsDir.appendingPathComponent("\(UUID().uuidString).store")
+        let config = ModelConfiguration(schema: schema, url: storeURL)
         return try ModelContainer(for: schema, configurations: [config])
     }
 }
