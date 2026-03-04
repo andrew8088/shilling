@@ -75,7 +75,7 @@ The app bundle produced by the archive flow is at:
 
 All targets call `scripts/build-macos-app.sh`, which supports env overrides (for example `ARCHIVE_PATH`, `DERIVED_DATA_PATH`, `INSTALL_DIR`).
 
-## Legacy Migration Export
+## Legacy Migration Export/Import
 
 Export legacy Postgres data into a migration SQLite file (raw + target-shaped tables):
 
@@ -94,3 +94,18 @@ make export-legacy-migration-sqlite \
 
 Detailed format and validation docs:
 - `docs/legacy-postgres-migration-sqlite-format.md`
+
+Import migration SQLite into a fresh Shilling data directory:
+
+```bash
+swift run --package-path /Users/andrew/code/shilling/ShillingCore ShillingCLI \
+  import-migration-sqlite \
+  --input /tmp/legacy-migration.sqlite \
+  --data-dir /tmp/shilling-migration-data
+```
+
+The importer validates:
+- referential integrity across `target_*` IDs
+- exactly two entries per transaction
+- balanced debit/credit totals per transaction
+- source/persisted row-count parity

@@ -23,6 +23,25 @@ Optional:
 - `--family-id <uuid>` when the source DB has multiple families.
 - `--psql-bin <path>` to override the `psql` executable.
 
+## Import Command
+
+Import `target_*` rows into a fresh Shilling data store via `ModelContext`:
+
+```bash
+swift run --package-path /Users/andrew/code/shilling/ShillingCore ShillingCLI \
+  import-migration-sqlite \
+  --input /tmp/legacy-migration.sqlite \
+  --data-dir /tmp/shilling-migration-data
+```
+
+Importer behavior:
+- fails fast if the destination store is not empty
+- validates referential integrity (`target_entries`/`target_budgets`/`target_transactions` FK-style links)
+- validates double-entry invariants (exactly two entries per transaction, one debit + one credit, balanced amounts)
+- writes through Shilling models and `ModelContext` (no direct writes into SwiftData internal tables)
+
+On success, CLI output includes source counts and persisted counts; these must match.
+
 ## Table Groups
 
 ### Raw source snapshot
@@ -132,3 +151,31 @@ sqlite3 /tmp/legacy-migration.sqlite \
     ) t
     where abs(d - c) > 0.0001;"
 ```
+
+## Deterministic Run + Verify
+
+```bash
+# 1) Build migration SQLite from legacy Postgres
+make export-legacy-migration-sqlite \
+  LEGACY_PG_DB=<source-db> \
+  LEGACY_MIGRATION_SQLITE=/tmp/legacy-migration.sqlite
+
+# 2) Import into a fresh Shilling store
+rm -rf /tmp/shilling-migration-data
+mkdir -p /tmp/shilling-migration-data
+swift run --package-path /Users/andrew/code/shilling/ShillingCore ShillingCLI \
+  import-migration-sqlite \
+  --input /tmp/legacy-migration.sqlite \
+  --data-dir /tmp/shilling-migration-data
+
+# 3) Verify source table counts in migration SQLite
+sqlite3 /tmp/legacy-migration.sqlite "
+select
+  (select count(*) from target_accounts) as accounts,
+  (select count(*) from target_import_records) as import_records,
+  (select count(*) from target_transactions) as transactions,
+  (select count(*) from target_entries) as entries,
+  (select count(*) from target_budgets) as budgets;"
+```
+
+The counts from step 3 must match the importer’s `Source rows`/`Persisted rows` output.

@@ -1,6 +1,7 @@
 ---
-status: ready
+status: complete
 created: 2026-03-04
+completed: 2026-03-04
 ---
 Implement a migration SQLite importer that reads `target_accounts`, `target_transactions`, `target_entries`, and related `target_*` tables, then persists equivalent Shilling models via `ModelContext` in deterministic order.
 

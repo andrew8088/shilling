@@ -1,6 +1,7 @@
 ---
-status: ready
+status: complete
 created: 2026-03-04
+completed: 2026-03-04
 tasks:
   - TASK-00108-implement-migration-sqlite-importer-via-modelcontext.md
 ---

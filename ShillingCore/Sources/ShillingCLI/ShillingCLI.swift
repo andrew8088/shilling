@@ -10,6 +10,7 @@ struct ShillingCLI: ParsableCommand {
         subcommands: [
             Accounts.self,
             ImportCSV.self,
+            ImportMigrationSQLite.self,
         ]
     )
 }
